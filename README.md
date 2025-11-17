@@ -1,6 +1,6 @@
 # Latent Uncertainty-Aware Multi-View SDF Scan Completion
-[![Cite this repository](https://img.shields.io/badge/Cite%20this%20repo-BibTeX-blue)](https://crv.pubpub.org/pub/yanc7d1w)
-[![Watch Video](https://img.shields.io/badge/Watch-Demo-blue)](https://cgtuebingen.github.io/poc-slt/)
+<!--[![Cite this repository](https://img.shields.io/badge/Cite%20this%20repo-BibTeX-blue)](https://crv.pubpub.org/pub/yanc7d1w)-->
+[![Watch Video](https://img.shields.io/badge/Watch-Demo-blue)](https://cgtuebingen.github.io/ua3dscancomp)
 
 **Authors**: Faezeh Zakeri, Lukas Ruppert, Raphael Braun, and Hendrik P.A. Lensch
 
@@ -29,7 +29,7 @@ Imperfect reconstructions arising from occlusions, shadows, reflections, and oth
 
 ---
 
-## Demo Gif
+<!--## Demo Gif-->
 <!--[For high quality video, click here!](https://cgtuebingen.github.io/poc-slt/)
 <p align="center">
   <img src="docs/demo.gif" alt="POC-SLT Demo">
