@@ -34,7 +34,7 @@ Imperfect reconstructions arising from occlusions, shadows, reflections, and oth
 <p align="center">
   <img src="docs/demo.gif" alt="POC-SLT Demo">
 </p>
-<!--![POC-SLT Demo](docs/demo.gif)-->-->
+<!--![POC-SLT Demo](docs/demo.gif)
 
 ## Project Structure
 
