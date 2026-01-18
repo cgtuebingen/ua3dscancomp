@@ -26,14 +26,12 @@ Imperfect reconstructions arising from occlusions, shadows, reflections, and oth
 
 ---
 
-<!--## Demo Gif-->
-<!--[For high quality video, click here!](https://cgtuebingen.github.io/poc-slt/)
-<p align="center">
-  <img src="docs/demo.gif" alt="POC-SLT Demo">
-</p>
-<!--![POC-SLT Demo](docs/demo.gif)
+## 📦 Model checkpoint
 
----
+[Shape Completion on Objaverse](https://huggingface.co/zakeri68/3D-scancomp-objaverse)
+
+[Patchwise Variational Autoencoder (P-VAE) on Shapenet](https://huggingface.co/zakeri68/poc-slt-shapenet-p-vae)
+
 
 ## Project Structure
 
