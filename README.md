@@ -14,12 +14,10 @@
 
 ## Project Progress Checklist
 
-- [ ] Upload pretrained models
 - [ ] Release main codebase
 - [ ] Add evaluation scripts
 - [ ] Clean up and document configs
 - [ ] Add license info
-<!--- [ ] Upload Dataset LMDB-->
 ---
 
 ## Abstract
@@ -34,6 +32,11 @@ Imperfect reconstructions arising from occlusions, shadows, reflections, and oth
   <img src="docs/demo.gif" alt="POC-SLT Demo">
 </p>
 <!--![POC-SLT Demo](docs/demo.gif)
+
+## 📦 Model checkpoint
+[Shape Completion on Objaverse](https://huggingface.co/zakeri68/3D-scancomp-objaverse)
+
+[Patchwise Variational Autoencoder (P-VAE) on Shapenet](https://huggingface.co/zakeri68/poc-slt-shapenet-p-vae)
 
 ## Project Structure
 
