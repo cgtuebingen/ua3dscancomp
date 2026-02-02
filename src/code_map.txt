@@ -1,0 +1,15 @@
+completePartialScans ->train.py
+main_config -> train_config.py
+LMDB_DatasetClass_Objaverse_PartialViews -> train_dataset.py
+clean_code_common_files ->utils
+conv3d_seamRemoval -> seam_removal_train
+conv3d_seamRemoving_main_config -> seam_removal_train_config
+SR_model -> seam_removal_model
+vae_main_v1_64_2x2x2_32cubestream ->pvae
+eval_config_objaverse -> eval_config
+Eval_completePartialScans -> eval
+my_test -> partial_view_generation_fns
+Test_dataset -> setup_test_dataset
+LMDB_TestDatasetClass_Objaverse_PartialViews -> test_dataset
+Dataset_Class_32stream_sdf_plus_pc_shapenetcorev2_excluding_shapenetcrev1_validation_split -> pvae_dataset
+skip_connection_5_2x2x2_noBNDecoder -> pvae_model
