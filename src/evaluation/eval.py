@@ -18,7 +18,7 @@ from utils.positional_encoder_class import MYPositionalEncoder3D
 from utils import encoder_decoder_loading as ed
 from utils.helper_fns import concatenate_for_given_dim
 from utils import encoder_related_fns as enc_fns
-from utils.m_cube_fns import make_mcubes_from_voxels_obj_with_pad
+from utils.m_cube_fns import make_mcubes_from_voxels_obj_with_pad, make_mcubes_from_voxels_ply_with_pad
 from setup_test_dataset import setup_dataset
 from eval_fns import evaluate_all, write_evaluation_result, clip_input
 import time
@@ -45,15 +45,12 @@ class EvalObjaverse():
             num_views_for_test: int,
             min_range: int,
             max_range: int,
-            rand_rotation_angle: float,
 
     ):
         super(EvalObjaverse, self).__init__()
         self.mesh_path = mesh_path
         self.common_obj_dir = common_obj_dir
         self.image_resolution = image_resolution
-
-        self.rand_rotation_angle = rand_rotation_angle
 
         self.eval_dir = eval_dir
         self.obj_dir = obj_dir
@@ -219,8 +216,9 @@ class EvalObjaverse():
         print("\n min_range", self.min_range, "-- max_range:", self.max_range)
 
         for i in tqdm(range(self.min_range, self.max_range, 1), "Objaverse Test Samples:"):
-
             batch = self.test_dataset[i]
+            if i not in [2724, 2648, 2622, 3734, 3418, 822, 4701, 213, 3339, 2055]:
+                continue
             (
                 object_indices,
                 mesh_file_name, mesh_name, folder_name, combined_sdf_voxel, combined_uncertainty_voxel_normalized, gt_vertices, gt_faces, gt_sdf_latent_codes
@@ -267,8 +265,8 @@ class EvalObjaverse():
                 "target_resolution": self.target_resolution,
                 "resolution": self.resolution,
                 "batch_size": batch_size,
-                "hausdorff_scale": 1,    # TODO what should ot be? check me?
-                "chamfer_scale": 1,    # TODO what should ot be? check me?
+                "hausdorff_scale": 1,
+                "chamfer_scale": 1,
             }
             # this is decoded now
             dict_data_vis = pmt_fns.generate_any_data_for_plotting(dict_args_vis, dict_args_variables, self.fdecoder)
@@ -339,7 +337,7 @@ class EvalObjaverse():
     def setup(self):
 
         # self.test_dataset = setup_dataset(self.mesh_path, self.test_lmdb_path, self.obj_dir, self.image_resolution, self.num_views_for_test, self.resolution, device=self.device)
-        self.test_dataset = setup_dataset(self.mesh_path, self.test_lmdb_path, self.obj_dir, self.image_resolution, self.num_views_for_test, self.resolution, self.rand_rotation_angle, device=self.device)
+        self.test_dataset = setup_dataset(self.mesh_path, self.test_lmdb_path, self.obj_dir, self.image_resolution, self.num_views_for_test, self.resolution, device=self.device)
 
         print("\n test_dataset len:", len(self.test_dataset))
 

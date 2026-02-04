@@ -1,30 +1,26 @@
 import os
 import sys
-if __name__ == "__main__":
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2"
+# if __name__ == "__main__":
+#     os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2"
 import numpy as np
-# import pytorch_lightning as pl
 import lmdb
-# import msgpack
+
 import msgpack_numpy as m
-# import time
+
 import torch
 from typing import Tuple
 m.patch()
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/Partial3DScanCompletion/')
-# from tqdm import tqdm
-from Partial3DScan.Developement.data_processing.sdf_generatings_fns import calculate_sdf_and_dots_cuda, setup_cu3d
-from Partial3DScan.Developement.uncertainty_processing.uncertainity_fns import calculate_uncertainty_h7, calculate_uncertainty_h8, combine_distribution, calculate_uncertainty_h8_grid_search
-# from Partial3DScan.Developement.partial_scan_generating.partial_scan_generating_fns import GeneratePartialViewFromMesh
-# from torch.utils.data import DataLoader
-# from Nvdiffrast.my_test import compute_partial_views, generate_mvp_matrices, create_cuda_raster_context
+sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+
+from utils.sdf_generatings_fns import calculate_sdf_and_dots_cuda
+from utils.uncertainity_fns import calculate_uncertainty_h8, combine_distribution, calculate_uncertainty_h8_grid_search
+
 import mcubes
-# import trimesh
+
 # from Visualization.m_cube_fns import make_mcubes_from_voxels_obj_with_pad
 
-from Nvdiffrast.partial_view_generation_fns import generate_mvp_matrices
+from utils.partial_view_generation_fns import generate_mvp_matrices
 
-# import cumcubes
 def openLMDB(path: str):
     my_lmdb = lmdb.open(
         path,

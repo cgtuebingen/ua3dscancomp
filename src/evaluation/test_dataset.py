@@ -78,12 +78,7 @@ class TESTLMDBOBJAVERSEPARTIALVIEWS(pl.LightningDataModule):
         if idx < 0 or idx is None:
             raise "invalid item index"
 
-        num_views = self.num_views[idx % len(self.num_views)]
-        idx = idx // len(self.num_views)
-
         key = self.keys[idx]
-
-        # example = {"mesh_file_name": mesh_file_current, "faces": faces, "vertices": vertices, "bbx": bbx}
 
         with self.my_lmdb.begin(write=False) as lmdb_txn:  # reading what is written before using the object
             raw_example = msgpack.unpackb(lmdb_txn.get(msgpack.packb(key)))
@@ -107,6 +102,7 @@ class TESTLMDBOBJAVERSEPARTIALVIEWS(pl.LightningDataModule):
         vertices = torch.from_numpy(vertices).to(device=self.device)
         faces = torch.from_numpy(faces).to(dtype=torch.int32).to(device=self.device)
         # for num_views in self.num_view_list:
+        num_views = self.num_views
 
         data = data_fn.init_combined_data(num_views)
 
@@ -220,7 +216,7 @@ class TESTLMDBOBJAVERSEPARTIALVIEWS(pl.LightningDataModule):
         #     clipped_combined_sdf_voxel = clip_input(marched_sdf, combined_uncertainty_reshaped, uncertainty_thresh=20)
         #     make_mcubes_from_voxels_obj_with_pad(clipped_combined_sdf_voxel, clipped_out_file_name)
 
-        return [key, mesh_file_name, mesh_name, folder_name, marched_sdf, combined_uncertainty_reshaped_normalized, vertices, faces, gt_sdf_latent_codes, num_views]
+        return [key, mesh_file_name, mesh_name, folder_name, marched_sdf, combined_uncertainty_reshaped_normalized, vertices, faces, gt_sdf_latent_codes]
 
 #
 # def TestLMDB_pytorch_dataloader():

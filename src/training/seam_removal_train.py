@@ -17,12 +17,13 @@ from utils.positional_encoder_class import MYPositionalEncoder3D
 from utils import encoder_decoder_loading as ed
 from utils.helper_fns import concatenate_for_given_dim
 
-# from transformers.optimization import get_cosine_schedule_with_warmup
 from utils import encoder_related_fns as enc_fns
 from utils.m_cube_fns import make_mcubes_from_voxels_obj_with_pad
 
 from subvolume_devision import (collect_sub_voxels_to_voxel_with_batch, subvdivide_voxel_with_batch)
 from seam_removal_model import SeamRemoval
+from training.train import CompletePartialScans as sps
+
 # --------------------------------------------------------------------------------------------------------------------------------------------------------
 class RemoveSeams(pl.LightningModule):
     def __init__(
@@ -82,7 +83,6 @@ class RemoveSeams(pl.LightningModule):
         self.penc_channels = 8 * self.hparams.latent_dim * 2
         self.positional_encoder_3d = MYPositionalEncoder3D(self.penc_channels)
         if pre_trained:
-            from Partial3DScan.Developement.experiments.fulldataset.bf16_mixed.cvpr_submission.completePartialScans import CompletePartialScans as sps
             pretrained_model = sps.load_from_checkpoint(checkpoint_path=first_transformer_ckpt, map_location='cpu')
 
             pretrained_model.freeze()
@@ -524,14 +524,11 @@ class RemoveSeams(pl.LightningModule):
         print("\n val_dataset len:", len(self.val_dataset))
 
         # for evaluation
-        # print("\n test dataset num_views:", self.trainer.model.num_views_for_test)
         self.test_dataset = LMDBOBJAVERSEPARTIALVIEWS(self.hparams.mesh_path, self.hparams.test_lmdb_path, self.hparams.marching_cube_result_dir,
                                                       self.hparams.image_resolution, self.hparams.resolution, device=self.device)
 
-        # self.test_dataset.len = 100
         print("\n test_dataset len:", len(self.test_dataset))
 
-        torch.multiprocessing.set_start_method('spawn')
 
     def train_dataloader(self):
         dataloader = torch.utils.data.DataLoader(
@@ -570,32 +567,28 @@ class RemoveSeams(pl.LightningModule):
         )
 
     def configure_optimizers(self):
-        # we exclude fdecoer params from optimizer because it fucks them up, yes you heard me!
+        # we exclude fdecoer params from optimizer!
         dont_train_those = []
         for k, _ in self.fdecoder.named_parameters():
             dont_train_those.append(k)
 
-        # we exclude fencoder params from optimizer because it fucks them up, yes you heard me!
+        # we exclude fencoder params from optimizer !
         dont_train_those = []
         for k, _ in self.fencoder.named_parameters():
             dont_train_those.append(k)
 
-        # print(params)
         dont_train_those = []
         for k, _ in self.regular_transformer.named_parameters():
             dont_train_those.append(k)
 
-        # print(params)
         dont_train_those = []
         for k, _ in self.conv1.named_parameters():
             dont_train_those.append(k)
 
-        # print(params)
         dont_train_those = []
         for k, _ in self.conv2.named_parameters():
             dont_train_those.append(k)
 
-        # print(params)
         dont_train_those = []
         for k, _ in self.conv3.named_parameters():
             dont_train_those.append(k)
@@ -611,21 +604,5 @@ class RemoveSeams(pl.LightningModule):
             betas=(0.9, 0.99),
             weight_decay=0.05,
         )
-        # num_gpus = 3
-        # num_train_steps = len(self.train_dataset) // (self.hparams.batch_size * num_gpus) * self.trainer.max_epochs
-        # print("\n num_train_steps: ", num_train_steps)
-        # num_warmup_steps = int(self.hparams.warmup_ratio * num_train_steps)
-        # print("\n num_warmup_steps: ", num_warmup_steps)
-        #
-        # lr_scheduler = {
-        #     "scheduler": get_cosine_schedule_with_warmup(
-        #         optimizer,
-        #         num_warmup_steps=num_warmup_steps,
-        #         num_training_steps=num_train_steps,
-        #         num_cycles=0.5,
-        #     ),
-        #     "interval": "step",
-        #     "frequency": 1,
-        # }
-        return [optimizer] #, [lr_scheduler]
+        return [optimizer]
 

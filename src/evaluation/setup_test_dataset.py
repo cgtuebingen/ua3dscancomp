@@ -3,10 +3,10 @@ sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-git
 
 from test_dataset import TESTLMDBOBJAVERSEPARTIALVIEWS
 
-def setup_dataset(mesh_path, test_lmdb_path, marching_cube_result_dir, image_resolution, num_views_for_test, resolution, average_rotation_deg, device):
+def setup_dataset(mesh_path, test_lmdb_path, marching_cube_result_dir, image_resolution, num_views_for_test, resolution, device):
 
     test_dataset = TESTLMDBOBJAVERSEPARTIALVIEWS(mesh_path, test_lmdb_path, marching_cube_result_dir,
-                                                 image_resolution, num_views_for_test, resolution, average_rotation_deg, device=device)
+                                                 image_resolution, num_views_for_test, resolution, device=device)
 
     print("\n test_dataset len:", len(test_dataset))
     return test_dataset

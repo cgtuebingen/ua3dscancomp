@@ -11,17 +11,12 @@ from pytorch_lightning.callbacks import LearningRateMonitor
 def main(eval_root: str):
     parser = argparse.ArgumentParser()
     #  for SDFtoSDF
-
     parser.add_argument("--latent_dim", default=512, type=int)  # 512
     parser.add_argument("--resolution", default=128, type=int)
     parser.add_argument("--target_resolution", default=32, type=int)
-
     parser.add_argument("--batch_size", default=2, type=int)
     parser.add_argument("--val_batch_size", default=1, type=int)
-
-    # parser.add_argument("--learning_rate", default=2e-5, type=float)
     parser.add_argument("--learning_rate", default=1e-4, type=float)
-
     parser.add_argument("--warmup_ratio", default=0.02, type=float)
     # --------------------------------------------
     #
@@ -31,24 +26,6 @@ def main(eval_root: str):
         type=str,
     )
 
-    # parser.add_argument(
-    #     "--val_lmdb_path",
-    #     default="/graphics/scratch3/staff/zakeri/LMDBs/filtered_objaverse_joined_lmdb/_val_withLatentCodes__0_1909.mdb",  # dataset for full mesh with 128^3
-    #     type=str,
-    # )
-    #
-    # parser.add_argument(
-    #     "--test_lmdb_path",
-    #     default="/graphics/scratch3/staff/zakeri/LMDBs/filtered_objaverse_joined_lmdb/_test_withLatentCodes__0_5000.mdb",  # dataset for full mesh with 128^3
-    #     type=str,
-    # )
-
-    # on ceph in chunk format
-    # parser.add_argument(
-    #     "--train_lmdb_path",
-    #     default="/ceph/zakeri/LMDB/filtered_objaverse_joined_lmdb_withLatentCodes/",  # dataset for full mesh with 128^3
-    #     type=str,
-    # )
     parser.add_argument(
         "--val_lmdb_path",
         default="/ceph/zakeri/LMDB/filtered_objaverse_joined_lmdb_withLatentCodes/val/_val_withLatentCodes__0_1909.mdb",  # dataset for full mesh with 128^3
@@ -73,17 +50,6 @@ def main(eval_root: str):
         default="/ceph/zakeri/vae_checkpoint/checkpoint-epoch=193-loss=0.000.ckpt/",
         type=str,
     )
-    # parser.add_argument(
-    #     "--vae_checkpoint_path",
-    #     default="/graphics/scratch2/staff/zakeri/train_logs/VAE/skip_connection/v403_64_2x2x2_noBNDecoder_shapenetcorev2_excluding_shapenetcorev1_validation_split/lightning_logs/version_0/checkpoints/saved/checkpoint-epoch=193-loss=0.000.ckpt/",
-    #     type=str,
-    # )
-
-    # parser.add_argument(
-    #     "--vae_checkpoint_path",
-    #     default="/graphics/scratch3/staff/zakeri/VAE_Checkpoint/checkpoint-epoch=193-loss=0.000.ckpt/",
-    #     type=str,
-    # )
     parser.add_argument(
         "--marching_cube_result_dir",
         default="/ceph/zakeri/ParticalScanComletion/training_logs/bf16_mixed/seam_removal/conv3d/mcube_res_dir/",
@@ -104,18 +70,11 @@ def main(eval_root: str):
     parser.add_argument("--num_samples", default=1000000, type=int)
     parser.add_argument("--num_views_for_test", default=3, type=int)  # TODO required
 
-    # parser.add_argument(
-    #     "--first_transformer_ckpt",
-    #     default="/graphics/scratch3/staff/zakeri/saved_training_logs/PartialScanCompletion/bf16_mixed/version_7/checkpoints/0211_1507/checkpoint-epoch=010-loss=0.000-v1.ckpt",
-    #     type=str,
-    # )
-    # this checkpoint is the resume of ersion_7/checkpoints/0211_1507/checkpoint-epoch=010-loss=0.000-v1.ckpt for harsh cases only
     parser.add_argument(
         "--first_transformer_ckpt",
         default="/ceph/zakeri/ParticalScanComletion/training_logs/bf16_mixed/lightning_logs/version_10/checkpoints/last.ckpt",
         type=str,
     )
-    # parser = pl.Trainer.add_argparse_args(parser)
     args = parser.parse_args()
 
     obj_dir = os.path.join(eval_root, "obj_dir" + "_num_views-" + str(args.num_views_for_test) + "/")
@@ -175,19 +134,16 @@ def main(eval_root: str):
         accelerator="gpu",
         devices=-1,
         num_nodes=1,
-        strategy=DDPStrategy(),  # NCCL tends to be unreliable for some reason , find_unused_parameters=True
+        strategy=DDPStrategy(),
         max_epochs=1,
         log_every_n_steps=100,
-        # detect_anomaly=True,
         callbacks=[checkpoint_callback, lr_Monitor],
         val_check_interval=100,
-        # check_val_every_n_epoch=1,
-        default_root_dir="/ceph/zakeri/ParticalScanComletion/training_logs/bf16_mixed/seam_removal/conv3d/",
-        # ckpt_path=""
+        default_root_dir="/graphics/scratch2/staff/zakeri/tmp/",
         precision="bf16-mixed",
 
     )
-    trainer.fit(model, ckpt_path="/ceph/zakeri/ParticalScanComletion/training_logs/bf16_mixed/seam_removal/conv3d/lightning_logs/version_57/checkpoints/last.ckpt")
+    trainer.fit(model)
     print("CUDA_VISIBLE_DEVICES", os.environ["CUDA_VISIBLE_DEVICES"])
 
 if __name__ == "__main__":
@@ -195,16 +151,10 @@ if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2"
     print("torch.cuda.device_count()", torch.cuda.device_count())
     print("torch.cuda.nccl.version()", torch.cuda.nccl.version())
-    # torch.multiprocessing.set_sharing_strategy("file_system")
+
+    torch.multiprocessing.set_start_method('spawn')
 
     torch.set_float32_matmul_precision('high')
-    # v0
-    # v1 is with loss on slices, works with 1e-3 but it is spiky
-    # v2 is with loss on slices, works with 1e-4 not better than 1e-3
-    # v3 with loss on slices, works with 1e-5
-    # v4
-    # v6 is the result for the paper with 1 epoch and 1e-3
-    # v7 we add neighboring loss for all slices and we chenage conv3d layer first with kernel size of 3 and then 5
-    # v35 is the conv3d seam removing on the checkpoint goes to the paper from the main model: v10/last.ckpt
-    eval_root = "/ceph/zakeri/ParticalScanComletion/training_logs/bf16_mixed/seam_removal/conv3d/eval/"
+
+    eval_root = "/graphics/scratch2/staff/zakeri/tmp/"
     main(eval_root)

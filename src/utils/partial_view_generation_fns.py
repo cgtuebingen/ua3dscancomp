@@ -1,25 +1,15 @@
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('//')
 
 import numpy as np
 import torch
-# import imageio
 from Nvdiffrast.samples.torch import util
-import nvdiffrast.torch as dr
-# import time
+import Nvdiffrast.nvdiffrast.torch as dr
 from typing import Union, Tuple
 
 import torch.linalg as LA
 from utils import random_rotation
 #----------------------------------------------------------------------------
-# Copyright (c) 2020, NVIDIA CORPORATION.  All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto.  Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
-
 # Transform vertex positions to clip space
 def transform_pos(mtx: torch.Tensor, pos: torch.Tensor):
     # (x,y,z) -> (x,y,z,1)
@@ -98,7 +88,7 @@ def create_cuda_raster_context(device: str = 'cuda:0') -> dr.RasterizeCudaContex
 def generate_mvp_matrices(num_views: int) -> Tuple[torch.Tensor, torch.Tensor]:
 
     # spherical fibonacci
-    cosTheta = np.linspace(1, -1, num_views, endpoint=False)-1/(2*num_views)  # TODO: change 100 to num_views
+    cosTheta = np.linspace(1, -1, num_views, endpoint=False)-1/(2*num_views)
     cosTheta = torch.from_numpy(cosTheta)
 
     # golden_ratio = (np.sqrt(5.0) + 1) * 0.5
@@ -144,7 +134,7 @@ def generate_mvp_matrices(num_views: int) -> Tuple[torch.Tensor, torch.Tensor]:
 
     return mvp, dir
 
-def compute_partial_views(vertices: torch.Tensor, face_indices: torch.Tensor, glctx: Union[dr.RasterizeGLContext, dr.RasterizeCudaContext], mvps: torch.Tensor, dirs: torch.Tensor, resolution: int = 64, average_rotation_deg: float = 0.0, device: str = 'cuda:0'):
+def compute_partial_views(vertices: torch.Tensor, face_indices: torch.Tensor, glctx: Union[dr.RasterizeGLContext, dr.RasterizeCudaContext], mvps: torch.Tensor, dirs: torch.Tensor, resolution: int = 64, device: str = 'cuda:0'):
 
     # (u, v, z/w, triangle_id)
     # rast_out
@@ -174,14 +164,14 @@ def compute_partial_views(vertices: torch.Tensor, face_indices: torch.Tensor, gl
             # print('\n nothing visible in view ', i)
             continue
 
-        if average_rotation_deg > 0.0:
-            ################################################################################
-            # print('#### random rotation by', average_rotation_deg, 'degrees enabled!!!\n')
-            kappa = random_rotation.mean_angle_deg_to_kappa(average_rotation_deg)
-            sample_2d = torch.rand((2,))
-            coord_frame = random_rotation.sample_random_coordinate_system_vmf(kappa, sample_2d).to(device=device)
-            vertices[i] = vertices[i] @ coord_frame
-            ################################################################################
+        # if average_rotation_deg > 0.0:
+        #     ################################################################################
+        #     # print('#### random rotation by', average_rotation_deg, 'degrees enabled!!!\n')
+        #     kappa = random_rotation.mean_angle_deg_to_kappa(average_rotation_deg)
+        #     sample_2d = torch.rand((2,))
+        #     coord_frame = random_rotation.sample_random_coordinate_system_vmf(kappa, sample_2d).to(device=device)
+        #     vertices[i] = vertices[i] @ coord_frame
+        #     ################################################################################
 
         mesh_from_vertices = (vertices[i], faces_to_keep)
         meshes_from_vertices.append(mesh_from_vertices)

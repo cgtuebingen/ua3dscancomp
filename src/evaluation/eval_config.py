@@ -8,14 +8,12 @@ from eval import EvalObjaverse
 def main_test(eval_root: str, ckpt_path: str):
     parser = argparse.ArgumentParser()
     #  for SDFtoSDF
-
     parser.add_argument("--latent_dim", default=512, type=int)  # 512
     parser.add_argument("--resolution", default=128, type=int)
     parser.add_argument("--target_resolution", default=32, type=int)
     parser.add_argument("--val_batch_size", default=1, type=int)
 
     # --------------------------------------------
-    # on Heracleum or cluster-gpu-02
     parser.add_argument(
         "--train_lmdb_path",
         default="/graphics/scratch3/staff/zakeri/LMDBs/filtered_objaverse_joined_lmdb/_train_combined/",  # dataset for full mesh with 128^3
@@ -42,11 +40,6 @@ def main_test(eval_root: str, ckpt_path: str):
 
     parser.add_argument("--value_range", default=1, type=int)
 
-    # parser.add_argument(
-    #     "--vae_checkpoint_path",
-    #     default="/graphics/scratch2/staff/zakeri/train_logs/VAE/skip_connection/v403_64_2x2x2_noBNDecoder_shapenetcorev2_excluding_shapenetcorev1_validation_split/lightning_logs/version_0/checkpoints/saved/checkpoint-epoch=193-loss=0.000.ckpt/",
-    #     type=str,
-    # )
     parser.add_argument(
         "--vae_checkpoint_path",
         default="/graphics/scratch3/staff/zakeri/VAE_Checkpoint/checkpoint-epoch=193-loss=0.000.ckpt/",
@@ -64,15 +57,12 @@ def main_test(eval_root: str, ckpt_path: str):
 
     # test and eval:
     parser.add_argument("--num_samples", default=1000000, type=int)
-    parser.add_argument("--num_views_for_test", type=int, default=1)  # TODO required
+    parser.add_argument("--num_views_for_test", type=int, default=3)  # TODO required
 
-    parser.add_argument("--min_range", type=int,default=0)  # required=True
+    parser.add_argument("--min_range", type=int, default=0)  # required=True
     parser.add_argument("--max_range", type=int, default=5000)
-    parser.add_argument("--rand_rotation_angle", type=float, default=1) # TODO required
 
-    # parser = pl.Trainer.add_argparse_args(parser)
     args = parser.parse_args()
-
     #
     obj_dir = os.path.join(eval_root, "obj_dir" + "_num_views-" + str(args.num_views_for_test) + "/")
     if not os.path.isdir(obj_dir):
@@ -104,7 +94,6 @@ def main_test(eval_root: str, ckpt_path: str):
             num_views_for_test=args.num_views_for_test,
             min_range=args.min_range,
             max_range=args.max_range,
-            rand_rotation_angle=args.rand_rotation_angle,
         )
 
     model.test()
@@ -112,22 +101,12 @@ def main_test(eval_root: str, ckpt_path: str):
 
 if __name__ == "__main__":
 
-    # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
-    # print("torch.cuda.device_count()", torch.cuda.device_count())
-    # torch.multiprocessing.set_sharing_strategy("file_system")
-
-    # ckpt_path = "/graphics/scratch3/staff/zakeri/saved_training_logs/PartialScanCompletion/bf16_mixed/version_7/checkpoints/used_for_paper/checkpoint-epoch=010-loss=0.000-v1.ckpt"  # ev1
-    # ckpt_path = "/ceph/zakeri/ParticalScanComletion/training_logs/bf16_mixed/lightning_logs/version_7/checkpoints/last.ckpt" # not better than checkpoint-epoch=010-loss=0.000-v1.ckpt
-    # this is the checkpoint resumed from version_7/checkpoints/used_for_paper/checkpoint-epoch=010-loss=0.000-v1.ckp for harsh cases and goes to the paper
     ckpt_path = "/ceph/zakeri/ParticalScanComletion/training_logs/bf16_mixed/lightning_logs/version_10/checkpoints/used_for_paper/last.ckpt"
-    # eval_root = "/graphics/scratch3/staff/zakeri/ObjaverseEval/"
-    # eval_dir = os.path.join(eval_root, 'ev2_lastckpt_numview1')
-    # if not os.path.isdir(eval_dir):
-    #     os.mkdir(eval_dir)
 
-    eval_root = "/graphics/scratch3/staff/zakeri/ObjaverseEval/imperfect_poses_dir_clip_2/"
-    eval_dir = os.path.join(eval_root, 'ev0_lastckpt_1deg')
+    eval_root = "/graphics/scratch2/staff/zakeri/tmp/"
+    eval_dir = os.path.join(eval_root, 'test')
     if not os.path.isdir(eval_dir):
         os.mkdir(eval_dir)
 

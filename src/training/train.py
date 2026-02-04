@@ -5,11 +5,9 @@ sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-git
 import torch
 from torch import nn, Tensor
 import pytorch_lightning as pl
-from train_dataset import LMDBOBJAVERSEPARTIALVIEWS
-# from torch.utils.tensorboard import SummaryWriter
+from training.train_dataset import LMDBOBJAVERSEPARTIALVIEWS
 from p_vae.pvae import SDFtoSDF
 from utils import transformer_visualizations as tv
-import loss_helper_fns as l_fn
 from utils import plot_march_fns as pmt_fns
 from utils import sub_voxel_related_fns as pp_fns
 from utils.positional_encoder_class import MYPositionalEncoder3D
