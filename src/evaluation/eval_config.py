@@ -4,7 +4,6 @@ sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-git
 import argparse
 from eval import EvalObjaverse
 
-
 def main_test(eval_root: str, ckpt_path: str):
     parser = argparse.ArgumentParser()
     #  for SDFtoSDF
@@ -52,6 +51,12 @@ def main_test(eval_root: str, ckpt_path: str):
         type=str,
     )
 
+    parser.add_argument(
+        "--views_dict_path",
+        default="/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-github/data/views.pkl",
+        type=str,
+    )
+
     parser.add_argument("--pre_trained", default=True, type=bool)
     parser.add_argument("--image_resolution", default=256, type=int)
 
@@ -67,7 +72,7 @@ def main_test(eval_root: str, ckpt_path: str):
     obj_dir = os.path.join(eval_root, "obj_dir" + "_num_views-" + str(args.num_views_for_test) + "/")
     if not os.path.isdir(obj_dir):
         os.mkdir(obj_dir)
-    # just for rendering
+    # just for rendering the results
     rendered_obj_dir = os.path.join(eval_root, "rendered_obj_dir" + "_num_views-" + str(args.num_views_for_test) + "/")
     if not os.path.isdir(rendered_obj_dir):
         os.mkdir(rendered_obj_dir)
@@ -85,6 +90,7 @@ def main_test(eval_root: str, ckpt_path: str):
             mesh_path=args.mesh_path,
             vae_checkpoint_path=args.vae_checkpoint_path,
             common_obj_dir=args.common_obj_dir,
+            views_dict_path=args.views_dict_path,
             pre_trained=args.pre_trained,
             image_resolution=args.image_resolution,
             ckpt_path=ckpt_path,

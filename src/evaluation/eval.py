@@ -1,15 +1,11 @@
 import os.path
 import sys
 sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
-
 from typing import Tuple
-
 import trimesh
 from tqdm import tqdm
 import torch
-
 from torch import Tensor
-
 from p_vae.pvae import SDFtoSDF
 from utils import plot_march_fns as pmt_fns
 from utils import sub_voxel_related_fns as pp_fns
@@ -19,10 +15,9 @@ from utils import encoder_decoder_loading as ed
 from utils.helper_fns import concatenate_for_given_dim
 from utils import encoder_related_fns as enc_fns
 from utils.m_cube_fns import make_mcubes_from_voxels_obj_with_pad, make_mcubes_from_voxels_ply_with_pad
-from setup_test_dataset import setup_dataset
 from eval_fns import evaluate_all, write_evaluation_result, clip_input
-import time
 from training.train import CompletePartialScans as cp
+from test_dataset import TESTLMDBOBJAVERSEPARTIALVIEWS
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------
 class EvalObjaverse():
@@ -36,6 +31,7 @@ class EvalObjaverse():
             mesh_path: str,
             vae_checkpoint_path: str,
             common_obj_dir: str,
+            views_dict_path: str,
             pre_trained: bool,
             image_resolution: int,
             ckpt_path: str,
@@ -50,6 +46,7 @@ class EvalObjaverse():
         super(EvalObjaverse, self).__init__()
         self.mesh_path = mesh_path
         self.common_obj_dir = common_obj_dir
+        self.views_dict_path = views_dict_path
         self.image_resolution = image_resolution
 
         self.eval_dir = eval_dir
@@ -143,13 +140,8 @@ class EvalObjaverse():
         # This part is the same for training and validation
         batch_size = sdf_latent_codes.shape[0]
         # concatenate latent codes of sdf and uncertainty values-------------------------------------------------------------------
-        # TODO, do I concatenate them on latent_dim or in seqL????
         concatenated_latent_codes = concatenate_for_given_dim(sdf_latent_codes, uncertainty_latent_codes, cat_dim=2)
         concatenated_latent_codes_reshaped = concatenated_latent_codes.reshape([batch_size, self.number_of_sub_voxels, 2 * 8 * self.latent_dim])
-
-        # redundant mapping-------------------------------------------------------------------------------------------------------
-        # concatenated_latent_codes_reshaped_mapped = self.redundant_mapping(concatenated_latent_codes_reshaped)
-        # assert concatenated_latent_codes_reshaped.shape == concatenated_latent_codes_reshaped_mapped.shape
         # Positional Embeder-------------------------------------------------------------------------------------------------------
         z_positionally_encoded_re = self.positional_encoder_3d(shape_of_positions=[batch_size, 4, 4, 4, self.penc_channels])
         # Adding latent code with positional embedding----------------------------------------------------------------------------
@@ -234,14 +226,10 @@ class EvalObjaverse():
                 object_indices,
                 mesh_file_name, mesh_name, folder_name, combined_sdf_voxel, combined_uncertainty_voxel_normalized
             ]
-            for k in range(100):
-                start_t = time.time()
-                stuff = self.fwd(test_batch, test=True)
-                end_t = time.time()
-            print("\n time:", (end_t-start_t)/100, "sec")
+
+            stuff = self.fwd(test_batch, test=True)
 
             sdf_latent_codes, uncertainty_latent_codes, transformer_output_sequence_up = stuff
-            # I want them to be marched, so I get to the results.
 
             # just for vis once only
             if False:
@@ -272,9 +260,7 @@ class EvalObjaverse():
             dict_data_vis = pmt_fns.generate_any_data_for_plotting(dict_args_vis, dict_args_variables, self.fdecoder)
 
             dict_args_eval: dict = {}
-            # for b in range(batch_size):
             selected_index = object_indices.detach().item()
-            # if selected_index in self.my_selected_indices:
             collected_data_dict_for_plotting = pmt_fns.collect_any_generated_data_for_plotting(dict_data_vis, batch_idx=0)
             keys = [key for key in collected_data_dict_for_plotting.keys()]
             for k in range(len(keys)):
@@ -332,13 +318,10 @@ class EvalObjaverse():
             # TODO: call eval function
             eval_results = evaluate_all(dict_args_eval, dict_args_variables)
             write_evaluation_result(eval_results, self.eval_dir)
-        # # Calculate the mean for all
-        # calculate_mean_all(self.eval_dir)
     def setup(self):
 
-        # self.test_dataset = setup_dataset(self.mesh_path, self.test_lmdb_path, self.obj_dir, self.image_resolution, self.num_views_for_test, self.resolution, device=self.device)
-        self.test_dataset = setup_dataset(self.mesh_path, self.test_lmdb_path, self.obj_dir, self.image_resolution, self.num_views_for_test, self.resolution, device=self.device)
+        self.test_dataset = TESTLMDBOBJAVERSEPARTIALVIEWS(self.mesh_path, self.views_dict_path,  self.test_lmdb_path, self.obj_dir,
+                                                     self.image_resolution, self.num_views_for_test, self.resolution, device=self.device)
 
         print("\n test_dataset len:", len(self.test_dataset))
-
 
