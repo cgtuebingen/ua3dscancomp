@@ -33,6 +33,9 @@ Imperfect reconstructions arising from occlusions, shadows, reflections, and oth
 [Patchwise Variational Autoencoder (P-VAE) on Shapenet](https://huggingface.co/zakeri68/poc-slt-shapenet-p-vae)
 
 
+## Test Dataset LMDB
+[Objaverse Processed LMDB-Test-Split](https://huggingface.co/datasets/zakeri68/3D-scancomp-objaverse-test-lmdb)
+
 ## Project Structure
 
 ```bash
