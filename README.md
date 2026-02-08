@@ -36,6 +36,8 @@ Imperfect reconstructions arising from occlusions, shadows, reflections, and oth
 ## Test Dataset LMDB
 [Objaverse Processed LMDB-Test-Split](https://huggingface.co/datasets/zakeri68/3D-scancomp-objaverse-test-lmdb)
 
+You can generate train and validation LMDBs using [src/pre_processing](https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/data_preprocessing) scripts provided.
+
 ## Project Structure
 
 ```bash
