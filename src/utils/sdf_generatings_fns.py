@@ -1,12 +1,9 @@
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
-
+sys.path.append('./')
 import torch
 import numpy as np
-# from pycu3d.build import cu3d
 import cu3d
-# from pycu3d.test.evaluate_all import EVALALLMETRICS
-#from Partial3DScan.Developement.uncertainty_processing.uncertainity_fns import write_uncertainty_as_csv
+
 def generate_sdf_cuda(cu3d_instance: cu3d.CU3D, py3d_mesh, brute_force: bool = False, device: str = 'cuda:0'):
 
     if brute_force:
@@ -21,8 +18,6 @@ def generate_sdf_cuda(cu3d_instance: cu3d.CU3D, py3d_mesh, brute_force: bool = F
         sdfs = -sdfs.cuda().transpose(0, 2)  # inside is positive
         dots = dots.cuda().transpose(0, 2)
 
-    # print("\n sdf: ", sdfs.shape, ", dot product:", dots.shape)
-
     if (torch.any(torch.isnan(sdfs)) or torch.any(torch.isinf(sdfs))):
         breakpoint()
         # print("\n sdfs: ", sdfs)
@@ -32,6 +27,7 @@ def generate_sdf_cuda(cu3d_instance: cu3d.CU3D, py3d_mesh, brute_force: bool = F
         breakpoint()
 
     return {"gt_sdf_voxel": sdfs, "gt_dot_product_voxel": dots}
+
 def calculate_sdf_and_dots_cuda(cu3d_instance, vertices: torch.Tensor, faces: torch.Tensor, device):
     # make a pycuda mesh object
     vertices = cu3d.GPUPointData(vertices)
@@ -43,8 +39,6 @@ def calculate_sdf_and_dots_cuda(cu3d_instance, vertices: torch.Tensor, faces: to
     sdf = sdf_dict["gt_sdf_voxel"]
     dots = sdf_dict["gt_dot_product_voxel"]
 
-    # py3d_mesh.save_obj('/graphics/scratch2/datasets/objaverse1.0_processed/objaverse_100/res_dir/debug/mesh.obj')
-    # write_uncertainty_as_csv('/graphics/scratch2/datasets/objaverse1.0_processed/objaverse_100/res_dir/debug/sdf.csv', sdf.cpu().flatten(), dots.cpu().flatten())
     return (sdf, dots)
 
 def setup_cu3d(device: str) -> cu3d.CU3D:

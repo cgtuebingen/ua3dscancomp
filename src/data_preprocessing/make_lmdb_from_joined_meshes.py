@@ -5,7 +5,7 @@ import lmdb
 import msgpack
 import msgpack_numpy as m
 m.patch()
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('./')
 from pytorch3d.io import IO
 import trimesh
 from pytorch3d.io.experimental_gltf_io import MeshGlbFormat

@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('./')
 import argparse
 from eval import EvalObjaverse
 
@@ -15,25 +15,28 @@ def main_test(eval_root: str, ckpt_path: str):
     # --------------------------------------------
     parser.add_argument(
         "--train_lmdb_path",
-        default="/graphics/scratch3/staff/zakeri/LMDBs/filtered_objaverse_joined_lmdb/_train_combined/",  # dataset for full mesh with 128^3
+        default="/path_to_train_lmdb/_train_combined/",  # dataset for full mesh with 128^3
         type=str,
+        required=True
     )
 
     parser.add_argument(
         "--val_lmdb_path",
-        default="/graphics/scratch3/staff/zakeri/LMDBs/filtered_objaverse_joined_lmdb/_val_withLatentCodes__0_1909.mdb",  # dataset for full mesh with 128^3
+        default="/path_to_validation_lmdb/_val_withLatentCodes__0_1909.mdb",  # dataset for full mesh with 128^3
         type=str,
+        required=True
     )
 
     parser.add_argument(
         "--test_lmdb_path",
-        default="/graphics/scratch3/staff/zakeri/LMDBs/filtered_objaverse_joined_lmdb/_test_withLatentCodes__0_5000.mdb",  # dataset for full mesh with 128^3
+        default="/path_to_test_lmdb/_test_withLatentCodes__0_5000.mdb",  # dataset for full mesh with 128^3
         type=str,
+        required=True
     )
 
     parser.add_argument(
         "--mesh_path",
-        default="/graphics/scratch2/datasets/objaverse1.0_processed/",
+        default="/path_to_datasets_objaverse1.0_processed/",
         type=str,
     )
 
@@ -41,20 +44,23 @@ def main_test(eval_root: str, ckpt_path: str):
 
     parser.add_argument(
         "--vae_checkpoint_path",
-        default="/graphics/scratch3/staff/zakeri/VAE_Checkpoint/checkpoint-epoch=193-loss=0.000.ckpt/",
+        default="/path_to_vae_checkpoint/",
         type=str,
+        required=True
     )
 
     parser.add_argument(
         "--common_obj_dir",
-        default="/graphics/scratch3/staff/zakeri/ObjaverseEval/common_obj_dir/",
+        default="/path_to_GT_data/common_obj_dir/",
         type=str,
+        required=True
     )
 
     parser.add_argument(
         "--views_dict_path",
-        default="/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-github/data/views.pkl",
+        default="/path_to/data/views.pkl",
         type=str,
+        required=True
     )
 
     parser.add_argument("--pre_trained", default=True, type=bool)
@@ -62,9 +68,9 @@ def main_test(eval_root: str, ckpt_path: str):
 
     # test and eval:
     parser.add_argument("--num_samples", default=1000000, type=int)
-    parser.add_argument("--num_views_for_test", type=int, default=3)  # TODO required
+    parser.add_argument("--num_views_for_test", type=int, required=True)
 
-    parser.add_argument("--min_range", type=int, default=0)  # required=True
+    parser.add_argument("--min_range", type=int, default=0)
     parser.add_argument("--max_range", type=int, default=5000)
 
     args = parser.parse_args()
@@ -109,9 +115,9 @@ if __name__ == "__main__":
 
     os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
-    ckpt_path = "/ceph/zakeri/ParticalScanComletion/training_logs/bf16_mixed/lightning_logs/version_10/checkpoints/used_for_paper/last.ckpt"
+    ckpt_path = "path_to_shape_completion_checkpoint"
 
-    eval_root = "/graphics/scratch2/staff/zakeri/tmp/"
+    eval_root = "/path_to_eval_roo/"
     eval_dir = os.path.join(eval_root, 'test')
     if not os.path.isdir(eval_dir):
         os.mkdir(eval_dir)

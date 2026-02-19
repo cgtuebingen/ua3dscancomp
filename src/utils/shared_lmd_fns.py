@@ -4,7 +4,8 @@ import lmdb
 import msgpack
 import msgpack_numpy as m
 m.patch()
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/Partial3DScanCompletion/')
+sys.path.append('./')
+
 def openLMDB(path: str, subdir: bool = True):
     my_lmdb = lmdb.open(
         path,

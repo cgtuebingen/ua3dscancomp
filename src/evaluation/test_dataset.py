@@ -1,20 +1,16 @@
 import os
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('./')
 
 import numpy as np
 import pytorch_lightning as pl
-import lmdb
 import msgpack
 import msgpack_numpy as m
 import torch
 m.patch()
 from utils.sdf_generatings_fns import setup_cu3d
 
-from utils.partial_view_generation_fns import compute_partial_views, generate_mvp_matrices, create_cuda_raster_context
-import mcubes
-import trimesh
-from utils.m_cube_fns import make_mcubes_from_voxels_obj_with_pad
+from utils.partial_view_generation_fns import compute_partial_views, create_cuda_raster_context
 import utils.shared_dataset_fns as data_fn
 import utils.shared_lmd_fns as lmdb_fn
 #-------------------------------------------------------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 import os.path
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('./')
 from typing import Tuple
 import trimesh
 from tqdm import tqdm
@@ -12,10 +12,9 @@ from utils import sub_voxel_related_fns as pp_fns
 from utils.positional_encoder_class import MYPositionalEncoder3D
 # ----------------------------------------------------------------------------------------------------------------------------------------------------
 from utils import encoder_decoder_loading as ed
-from utils.helper_fns import concatenate_for_given_dim
 from utils import encoder_related_fns as enc_fns
-from utils.m_cube_fns import make_mcubes_from_voxels_obj_with_pad, make_mcubes_from_voxels_ply_with_pad
-from eval_fns import evaluate_all, write_evaluation_result, clip_input
+from utils.m_cube_fns import make_mcubes_from_voxels_ply_with_pad
+from eval_fns import evaluate_all, write_evaluation_result
 from training.train import CompletePartialScans as cp
 from test_dataset import TESTLMDBOBJAVERSEPARTIALVIEWS
 
@@ -86,7 +85,7 @@ class EvalObjaverse():
 
         self.penc_channels = 8 * self.latent_dim * 2
         self.positional_encoder_3d = MYPositionalEncoder3D(self.penc_channels)
-        # TODO always check me before running
+
         pretrained_model = cp.load_from_checkpoint(checkpoint_path=ckpt_path, map_location='cpu')
 
         pretrained_model.eval()
@@ -137,19 +136,13 @@ class EvalObjaverse():
         return transformer_output_sequence_up
 
     def forward(self, sdf_latent_codes: torch.Tensor, uncertainty_latent_codes: torch.Tensor) -> torch.Tensor:
-        # This part is the same for training and validation
         batch_size = sdf_latent_codes.shape[0]
-        # concatenate latent codes of sdf and uncertainty values-------------------------------------------------------------------
-        concatenated_latent_codes = concatenate_for_given_dim(sdf_latent_codes, uncertainty_latent_codes, cat_dim=2)
+
+        concatenated_latent_codes = torch.cat((sdf_latent_codes, uncertainty_latent_codes), dim=2).to(device=sdf_latent_codes.device)
         concatenated_latent_codes_reshaped = concatenated_latent_codes.reshape([batch_size, self.number_of_sub_voxels, 2 * 8 * self.latent_dim])
-        # Positional Embeder-------------------------------------------------------------------------------------------------------
         z_positionally_encoded_re = self.positional_encoder_3d(shape_of_positions=[batch_size, 4, 4, 4, self.penc_channels])
-        # Adding latent code with positional embedding----------------------------------------------------------------------------
         assert z_positionally_encoded_re.shape == concatenated_latent_codes_reshaped.shape
-        # CAT---------------------------------------------------------------------------------------------------------------------
-        transformer_input_sequence = concatenate_for_given_dim(z_positionally_encoded_re, concatenated_latent_codes_reshaped, cat_dim=2)
-        # # Transformer ----------------------------------------------------------------------------------------------------------
-        # MLP --------------------------------------------------------------------------------------------------------------------
+        transformer_input_sequence = torch.cat((z_positionally_encoded_re, concatenated_latent_codes_reshaped), dim=2).to(device=z_positionally_encoded_re.device)
         transformer_output_sequence = self.call_transformer_and_mapping_layers(transformer_input_sequence)
 
         return transformer_output_sequence
@@ -184,8 +177,6 @@ class EvalObjaverse():
         combined_sdf_sub_voxels = pp_fns.sub_divide_gt_and_normalize(combined_sdf_voxel, self.number_of_sub_voxels, self.target_resolution)
         # uncertainty values are normalized to [-1,1] already in dataset class
         sdf_latent_codes, uncertainty_latent_codes = self.encode_stuff(combined_sdf_sub_voxels, combined_uncertainty_voxel_normalized, False)
-        # FORWARD CAlL---------------------------------------------------------------------------------------------------------------------------------
-        # if I want this to run , my val_batch and my train_batch need to be the same.
         transformer_output_sequence_up = self.forward(sdf_latent_codes, uncertainty_latent_codes)
 
         return (sdf_latent_codes, uncertainty_latent_codes, transformer_output_sequence_up)
@@ -203,14 +194,14 @@ class EvalObjaverse():
         gt_mesh = trimesh.Trimesh(vertices=gt_vertices, faces=gt_faces)
         gt_mesh.export(gt_mesh_file_name)
         return gt_mesh_file_name
+
     def test(self) -> None:
 
         print("\n min_range", self.min_range, "-- max_range:", self.max_range)
 
         for i in tqdm(range(self.min_range, self.max_range, 1), "Objaverse Test Samples:"):
             batch = self.test_dataset[i]
-            if i not in [2724, 2648, 2622, 3734, 3418, 822, 4701, 213, 3339, 2055]:
-                continue
+
             (
                 object_indices,
                 mesh_file_name, mesh_name, folder_name, combined_sdf_voxel, combined_uncertainty_voxel_normalized, gt_vertices, gt_faces, gt_sdf_latent_codes
@@ -241,7 +232,6 @@ class EvalObjaverse():
 
             # visualization and
             dict_args_vis = {
-                # "Input": sdf_latent_codes,  # we do not need this(we show the combined_sdf directly as our input without going through vae)
                 "Transformer": transformer_output_sequence_up_reshaped,
                 "GT_SDF": gt_sdf_latent_codes,  # constant, what is written in LMDB
 
@@ -272,52 +262,38 @@ class EvalObjaverse():
                 if current_key.startswith("Transformer") and export_file_name.endswith(".ply"):
                     dict_args_eval["Transformer_file"] = export_file_name
 
-            #####
+            # ##### TODO , If you do not need it, comment this section!
+            # CLIP Input , for vis only:
+            # we need to un-normalized uncertainty first
             un_normalized_uncertainty_voxel = (combined_uncertainty_voxel_normalized.squeeze(0) * 50) + 50
-
-            clipped_combined_sdf_voxel = combined_sdf_voxel.squeeze(0) - torch.clip(un_normalized_uncertainty_voxel - 3, min=0.0) * 0.3  # ->for imperfect poses
-            input_dir = os.path.join(self.eval_dir, "Inputs", "Input" + "_num_views-" + str(self.num_views_for_test))
+            # This is only for visualization purpose
+            clipped_combined_sdf_voxel = combined_sdf_voxel.squeeze(0)-torch.clip(un_normalized_uncertainty_voxel-8, min=0.0)*0.003
+            input_dir = os.path.join(self.common_obj_dir, "Inputs", "Input" + "_num_views-" + str(self.num_views_for_test))
             if not os.path.isdir(input_dir):
-                os.makedirs(input_dir)
-            input_export_file_name = os.path.join(input_dir, "Input_clipped" + "_" + folder_name + "_" + mesh_name.rsplit('_')[0] + "_ObjID=" + str(selected_index) + ".ply")
+                os.mkdir(input_dir)
+            input_export_file_name = os.path.join(input_dir, "Input" + "_" + folder_name + "_" + mesh_name.rsplit('_')[0] + "_ObjID=" + str(selected_index) + ".ply")
             if not os.path.isfile(input_export_file_name):
                 make_mcubes_from_voxels_ply_with_pad(clipped_combined_sdf_voxel.cpu().numpy(), input_export_file_name)
             dict_args_eval["Input_file"] = input_export_file_name
-            #####
+            # #####
 
-            # TODO , temp
-            # # CLIP Input , for vis only:
-            # # we need to un-normalized uncertainty first
-            # un_normalized_uncertainty_voxel = (combined_uncertainty_voxel_normalized.squeeze(0) * 50) + 50
-            # # TODO check me again, checked
-            # # THis is only for visualization purpose only
-            # # clipped_combined_sdf_voxel = clip_input(combined_sdf_voxel.squeeze(0), un_normalized_uncertainty_voxel, uncertainty_thresh=20)
-            # clipped_combined_sdf_voxel = combined_sdf_voxel.squeeze(0)-torch.clip(un_normalized_uncertainty_voxel-8, min=0.0)*0.003
-            # input_dir = os.path.join(self.common_obj_dir, "Inputs", "Input" + "_num_views-" + str(self.num_views_for_test))
-            # if not os.path.isdir(input_dir):
-            #     os.mkdir(input_dir)
-            # input_export_file_name = os.path.join(input_dir, "Input" + "_" + folder_name + "_" + mesh_name.rsplit('_')[0] + "_ObjID=" + str(selected_index) + ".ply")
-            # if not os.path.isfile(input_export_file_name):
-            #     make_mcubes_from_voxels_ply_with_pad(clipped_combined_sdf_voxel.cpu().numpy(), input_export_file_name)
-            # dict_args_eval["Input_file"] = input_export_file_name
-            # TODO temp
-
-            # TODO: we here use the actual dataset and not the marched gt_sdf_voxel as GT for the mesh-level-metrics
+            #  we here use the actual dataset GT and not the marched gt_sdf_voxel as GT for the mesh-level-metrics
             gt_dir = os.path.join(self.common_obj_dir, 'GT', "obj_dir")
             gt_export_file_name = os.path.join(gt_dir, "GT" + "_" + folder_name + "_" + mesh_name.rsplit('_')[0] + "_ObjID=" + str(selected_index) + ".ply")
             dict_args_eval["GT_file"] = gt_export_file_name
 
             # Decoded ones on voxel level
             dict_args_eval["Completed_voxel"] = collected_data_dict_for_plotting["Transformer"]
-            # TODO : Check me or actual GT-> for voxel we have no choice but taking the GT_sdf_voxel because we evaluate from the voxel,
+            # Here to evaluate voxel-level metrics, we have no choice but taking the marched GT_sdf_voxel
             dict_args_eval["GT_voxel"] = collected_data_dict_for_plotting["GT_SDF"]
             # dict_args_eval["Input_voxel"] = collected_data_dict_for_plotting["Input"]
             dict_args_eval["Object_index"] = object_indices[0]
             dict_args_eval["num_samples"] = self.num_samples
+
             # now evaluate this object:
-            # TODO: call eval function
             eval_results = evaluate_all(dict_args_eval, dict_args_variables)
             write_evaluation_result(eval_results, self.eval_dir)
+
     def setup(self):
 
         self.test_dataset = TESTLMDBOBJAVERSEPARTIALVIEWS(self.mesh_path, self.views_dict_path,  self.test_lmdb_path, self.obj_dir,

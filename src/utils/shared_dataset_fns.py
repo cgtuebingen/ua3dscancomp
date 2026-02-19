@@ -1,7 +1,4 @@
-import os
 import sys
-# if __name__ == "__main__":
-#     os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2"
 import numpy as np
 import lmdb
 
@@ -10,15 +7,11 @@ import msgpack_numpy as m
 import torch
 from typing import Tuple
 m.patch()
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('./')
 
 from utils.sdf_generatings_fns import calculate_sdf_and_dots_cuda
 from utils.uncertainity_fns import calculate_uncertainty_h8, combine_distribution, calculate_uncertainty_h8_grid_search
-
 import mcubes
-
-# from Visualization.m_cube_fns import make_mcubes_from_voxels_obj_with_pad
-
 from utils.partial_view_generation_fns import generate_mvp_matrices
 
 def openLMDB(path: str):
@@ -35,26 +28,7 @@ def openLMDB(path: str):
     return my_lmdb
 
 
-# def generate_partial_views(, vertices, faces, res_dir: str, device: str): # pytorch3D
-#     num_views_to_generate = 50
-#     class_obj = GeneratePartialViewFromMesh(torch.from_numpy(vertices).to(device=device), torch.from_numpy(faces).to(device=device), num_views_to_generate, res_dir, device)
-#
-#     dist = [8]
-#     start = time.time()
-#     partial_meshes = class_obj.forward(dist)
-#     end = time.time()
-#     print("\n time for ", num_views_to_generate, " of views to generate, is:", end - start)
-#     return partial_meshes
 def init_combined_data(num_views: int) -> Tuple[float, float, float]:
-    # priors for 100views
-    # w_combined = 10.0
-    # mu_combined = -0.5
-    # uncertainty_combined = 100.0
-
-    # # priors for 20views
-    # w_combined = 1.0
-    # mu_combined = -0.5
-    # uncertainty_combined = 100.0
 
     # # priors for 100views GT
     w_combined = 10.0 * (num_views / 100)  # weighted based on num_views
@@ -70,22 +44,14 @@ def add_to_combined_data(cu3d_instance, data: Tuple[torch.Tensor, torch.Tensor, 
 
     gt_sdf_voxel, gt_dot_product_voxel = calculate_sdf_and_dots(cu3d_instance, vertices, faces, device)
     assert (gt_sdf_voxel.shape == gt_dot_product_voxel.shape == (resolution, resolution, resolution))
-    # plot_sdf(gt_sdf_voxel, i)
     gt_sdf_voxel = gt_sdf_voxel.flatten()
     gt_dot_product_voxel = gt_dot_product_voxel.flatten()
 
     # calculate uncertainty values here
     unc_values = calculate_uncertainty_h8(gt_dot_product_voxel, gt_sdf_voxel)
 
-
     # combine distributions right here:
     mu_combined, uncertainty_combined, w_combined = combine_distribution(gt_sdf_voxel, unc_values, w_combined, mu_combined, uncertainty_combined)
-
-    # if (torch.any(torch.isnan(w_combined)) or torch.any(torch.isinf(w_combined))):
-    #     breakpoint()
-    #
-    # if (torch.any(torch.isnan(uncertainty_combined)) or torch.any(torch.isinf(uncertainty_combined))):
-    #     breakpoint()
 
     return (mu_combined, uncertainty_combined, w_combined)
 
@@ -99,22 +65,14 @@ def add_to_combined_data_grid_search(cu3d_instance, data: Tuple[torch.Tensor, to
 
     gt_sdf_voxel, gt_dot_product_voxel = calculate_sdf_and_dots(cu3d_instance, vertices, faces, device)
     assert (gt_sdf_voxel.shape == gt_dot_product_voxel.shape == (resolution, resolution, resolution))
-    # plot_sdf(gt_sdf_voxel, i)
     gt_sdf_voxel = gt_sdf_voxel.flatten()
     gt_dot_product_voxel = gt_dot_product_voxel.flatten()
 
     # calculate uncertainty values here
     unc_values = calculate_uncertainty_h8_grid_search(gt_dot_product_voxel, gt_sdf_voxel, weight_dist, wight_dot_product)
 
-
     # combine distributions right here:
     mu_combined, uncertainty_combined, w_combined = combine_distribution(gt_sdf_voxel, unc_values, w_combined, mu_combined, uncertainty_combined)
-
-    # if (torch.any(torch.isnan(w_combined)) or torch.any(torch.isinf(w_combined))):
-    #     breakpoint()
-    #
-    # if (torch.any(torch.isnan(uncertainty_combined)) or torch.any(torch.isinf(uncertainty_combined))):
-    #     breakpoint()
 
     return (mu_combined, uncertainty_combined, w_combined)
 
@@ -130,7 +88,6 @@ def normalize_combined_data(data: Tuple[torch.Tensor, torch.Tensor, torch.Tensor
 def combine_data_all(partial_meshes: list, resolution: int, device: str = 'cpu'):
     data = init_combined_data()
 
-    # for i in tqdm(range(0, len(partial_meshes), 1), desc=" gt sdf + dot_product data"):
     for i in range(len(partial_meshes)):
         data = add_to_combined_data(data, partial_meshes[i], resolution, device)
 
@@ -144,18 +101,12 @@ def calculate_sdf_and_dots(cu3d_instance, vertices: torch.Tensor, faces: torch.T
     else:
         sdf, dots = calculate_sdf_and_dots_cuda(cu3d_instance, vertices.to(device=device), faces.to(dtype=torch.int32).to(device=device), device)
 
-    # if (torch.any(torch.isnan(sdf)) or torch.any(torch.isinf(sdf))):
-    #     breakpoint()
-    #
-    # if (torch.any(torch.isnan(dots)) or torch.any(torch.isinf(dots))):
-    #     breakpoint()
-
     return sdf, dots
 
 def do_sdf_on_marched_sdf(cu3d_instance, gt_sdf_voxel: np.ndarray, device: str) -> dict:
     # calculate sdf_latent_code from marched decoded sdf latent_code---------------------------------------------------------------------------
     # gt_sdf_voxel__copy = np.array(gt_sdf_voxel, copy=True)
-    gt_sdf_voxel__copy = np.pad(gt_sdf_voxel, pad_width=1, constant_values=-1)  # TODO, Important, checkme
+    gt_sdf_voxel__copy = np.pad(gt_sdf_voxel, pad_width=1, constant_values=-1)
     marched_vertices_, marched_triangles_ = mcubes.marching_cubes(gt_sdf_voxel__copy, 0)
 
     # test if they are not empty
@@ -178,10 +129,9 @@ def do_sdf_on_marched_sdf(cu3d_instance, gt_sdf_voxel: np.ndarray, device: str) 
 def do_sdf_on_marched_sdf_cuda(cu3d_instance, gt_sdf_voxel: np.ndarray, device: str) -> dict:
     # calculate sdf_latent_code from marched decoded sdf latent_code---------------------------------------------------------------------------
     gt_sdf_voxel__copy = torch.from_numpy(gt_sdf_voxel).to(device=device)
-    # gt_sdf_voxel__copy = gt_sdf_voxel__copy.permute([2,1,0])
     gt_sdf_voxel__copy = torch.nn.functional.pad(gt_sdf_voxel__copy, pad=(1, 1, 1, 1, 1, 1), value=-1)  # TODO, Important, checkme
 
-    marched_vertices_, marched_triangles_ = cumcubes.marching_cubes(gt_sdf_voxel__copy, 0)
+    marched_vertices_, marched_triangles_ = mcubes.marching_cubes(gt_sdf_voxel__copy, 0)
     marched_triangles_ = torch.stack([marched_triangles_[:, 0], marched_triangles_[:, 2], marched_triangles_[:, 1]], dim=1)
 
     # test if they are not empty

@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('./')
 import torch
 from torch import nn
 import pytorch_lightning as pl
@@ -148,7 +148,6 @@ class SDFtoSDF(pl.LightningModule):
                     del image_diff
                     # show in tensorboard
                     self.logger.experiment.add_image("mesh-Id{}_slice{}".format(selected_index, sl), plot, self.global_step)
-
 
     def setup(self, stage: str) -> None:
         train_dict_path = os.path.join(self.hparams.train_val_dict_path, "train_dataset_dict")

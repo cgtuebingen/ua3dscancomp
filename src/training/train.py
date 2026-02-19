@@ -1,7 +1,7 @@
 import sys
 from typing import Tuple, Any
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('./')
 import torch
 from torch import nn, Tensor
 import pytorch_lightning as pl
@@ -13,8 +13,7 @@ from utils import sub_voxel_related_fns as pp_fns
 from utils.positional_encoder_class import MYPositionalEncoder3D
 # ----------------------------------------------------------------------------------------------------------------------------------------------------
 from utils import encoder_decoder_loading as ed
-from utils.helper_fns import concatenate_for_given_dim
-# from transformers.optimization import get_cosine_schedule_with_warmup
+from transformers.optimization import get_cosine_schedule_with_warmup
 from utils import encoder_related_fns as enc_fns
 from utils.m_cube_fns import make_mcubes_from_voxels_obj_with_pad
 # ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -112,18 +111,11 @@ class CompletePartialScans(pl.LightningModule):
     def forward(self, sdf_latent_codes: torch.Tensor, uncertainty_latent_codes: torch.Tensor) -> torch.Tensor:
         # This part is the same for training and validation
         batch_size = sdf_latent_codes.shape[0]
-        # concatenate latent codes of sdf and uncertainty values-------------------------------------------------------------------
-        concatenated_latent_codes = concatenate_for_given_dim(sdf_latent_codes, uncertainty_latent_codes, cat_dim=2)
+        concatenated_latent_codes = torch.cat((sdf_latent_codes, uncertainty_latent_codes), dim=2).to(device=sdf_latent_codes.device)
         concatenated_latent_codes_reshaped = concatenated_latent_codes.reshape([batch_size, self.number_of_sub_voxels, 2 * 8 * self.hparams.latent_dim])
-
-        # Positional Embeder-------------------------------------------------------------------------------------------------------
         z_positionally_encoded_re = self.positional_encoder_3d(shape_of_positions=[batch_size, 4, 4, 4, self.penc_channels])
-        # Adding latent code with positional embedding----------------------------------------------------------------------------
         assert z_positionally_encoded_re.shape == concatenated_latent_codes_reshaped.shape
-        # CAT---------------------------------------------------------------------------------------------------------------------
-        transformer_input_sequence = concatenate_for_given_dim(z_positionally_encoded_re, concatenated_latent_codes_reshaped, cat_dim=2)
-        # # Transformer ----------------------------------------------------------------------------------------------------------
-        # MLP --------------------------------------------------------------------------------------------------------------------
+        transformer_input_sequence = torch.cat((z_positionally_encoded_re, concatenated_latent_codes_reshaped), dim=2).to(device=z_positionally_encoded_re.device)
         transformer_output_sequence = self.call_transformer_and_mapping_layers(transformer_input_sequence)
 
         return transformer_output_sequence
@@ -158,8 +150,6 @@ class CompletePartialScans(pl.LightningModule):
         combined_sdf_sub_voxels = pp_fns.sub_divide_gt_and_normalize(combined_sdf_voxel, self.number_of_sub_voxels, self.hparams.target_resolution)
         # uncertainty values are normalized to [-1,1] already in dataset class
         sdf_latent_codes, uncertainty_latent_codes = self.encode_stuff(combined_sdf_sub_voxels, combined_uncertainty_voxel, False)
-        # FORWARD CAlL---------------------------------------------------------------------------------------------------------------------------------
-        # If I want this to run , my val_batch and my train_batch need to be the same.
         transformer_output_sequence_up = self.forward(sdf_latent_codes, uncertainty_latent_codes)
         transformer_output_sequence_up_reshaped = transformer_output_sequence_up.reshape(batch_size, self.number_of_sub_voxels, -1)
 
@@ -419,21 +409,21 @@ class CompletePartialScans(pl.LightningModule):
             betas=(0.9, 0.99),
             weight_decay=0.05,
         )
+
         # num_gpus = 3
         # num_train_steps = len(self.train_dataset) // (self.hparams.batch_size * num_gpus) * self.trainer.max_epochs
         # print("\n num_train_steps: ", num_train_steps)
         # num_warmup_steps = int(self.hparams.warmup_ratio * num_train_steps)
-        # print("\n num_warmup_steps: ", num_warmup_steps)
-        #
-        # lr_scheduler = {
-        #     "scheduler": get_cosine_schedule_with_warmup(
-        #         optimizer,
-        #         num_warmup_steps=num_warmup_steps,
-        #         num_training_steps=num_train_steps,
-        #         num_cycles=0.5,
-        #     ),
-        #     "interval": "step",
-        #     "frequency": 1,
-        # }
-        return [optimizer]#, [lr_scheduler]
+
+        lr_scheduler = {
+            "scheduler": get_cosine_schedule_with_warmup(
+                optimizer,
+                num_warmup_steps=num_warmup_steps,
+                num_training_steps=num_train_steps,
+                num_cycles=0.5,
+            ),
+            "interval": "step",
+            "frequency": 1,
+        }
+        return [optimizer], [lr_scheduler]
 

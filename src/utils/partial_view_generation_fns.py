@@ -1,14 +1,11 @@
 import sys
-sys.path.append('//')
-
+sys.path.append('./')
 import numpy as np
 import torch
 from Nvdiffrast.samples.torch import util
 import Nvdiffrast.nvdiffrast.torch as dr
 from typing import Union, Tuple
-
 import torch.linalg as LA
-from utils import random_rotation
 #----------------------------------------------------------------------------
 # Transform vertex positions to clip space
 def transform_pos(mtx: torch.Tensor, pos: torch.Tensor):
@@ -113,8 +110,6 @@ def generate_mvp_matrices(num_views: int) -> Tuple[torch.Tensor, torch.Tensor]:
     # "x" sets the fov
     proj = torch.from_numpy(util.projection(x=0.2)).to(dtype=torch.float32)
 
-    # print(cameraPos[i])
-
     # rotate into camera coordinate system
     dir = torch.nn.functional.normalize(target.unsqueeze(0)-cameraPos, dim=1)
     right = torch.nn.functional.normalize(torch.linalg.cross(dir, up.unsqueeze(0)), dim=1)
@@ -138,8 +133,6 @@ def compute_partial_views(vertices: torch.Tensor, face_indices: torch.Tensor, gl
 
     # (u, v, z/w, triangle_id)
     # rast_out
-
-    # pos_clip, rast_out = rasterize(glctx, mvps, vertices, face_indices, resolution)
     _, rast_out = rasterize(glctx, mvps, vertices, face_indices, resolution)
 
     triangle_id = rast_out[:, :, :, 3]
@@ -155,8 +148,6 @@ def compute_partial_views(vertices: torch.Tensor, face_indices: torch.Tensor, gl
 
     both_conditions = torch.logical_and(face_mask_to_keep, dot_product_condition)
 
-    # img_r = shade(pos_clip, rast_out, pos_idx, vtx_col, col_idx)
-
     meshes_from_vertices = []
     for i in range(mvps.shape[0]):
         faces_to_keep = faces_rows[both_conditions[i, :]]
@@ -164,68 +155,7 @@ def compute_partial_views(vertices: torch.Tensor, face_indices: torch.Tensor, gl
             # print('\n nothing visible in view ', i)
             continue
 
-        # if average_rotation_deg > 0.0:
-        #     ################################################################################
-        #     # print('#### random rotation by', average_rotation_deg, 'degrees enabled!!!\n')
-        #     kappa = random_rotation.mean_angle_deg_to_kappa(average_rotation_deg)
-        #     sample_2d = torch.rand((2,))
-        #     coord_frame = random_rotation.sample_random_coordinate_system_vmf(kappa, sample_2d).to(device=device)
-        #     vertices[i] = vertices[i] @ coord_frame
-        #     ################################################################################
-
         mesh_from_vertices = (vertices[i], faces_to_keep)
         meshes_from_vertices.append(mesh_from_vertices)
 
-        #result_image = make_grid(np.stack([img_r[i].cpu().numpy()[::-1], world_coords[i].cpu().numpy()[::-1]]), ncols=1)
-
-        # result_image = make_grid(np.stack([world_coords[i].cpu().numpy()[::-1]]), ncols=1)
-        # util.display_image(result_image, size=resolution, title='Hello World')
-        # time.sleep(0.1)
-
     return meshes_from_vertices
-#----------------------------------------------------------------------------
-# def main():
-#     parser = argparse.ArgumentParser(description='Cube fit example')
-#     parser.add_argument('--opengl', help='enable OpenGL rendering', action='store_true', default=False)
-#     parser.add_argument('--discontinuous', action='store_true', default=False)
-#     args = parser.parse_args()
-#
-#     datadir = '/home/zakeri/Documents/Codes/MyCodes/Proposal2/SDF_VAE/Nvdiffrast/samples/data'
-#     fn = 'cube_%s.npz' % ('d' if args.discontinuous else 'c')
-#     with np.load(f'{datadir}/{fn}') as f:
-#         pos_idx, vtxp, col_idx, vtxc = f.values()
-#     print("Mesh has %d triangles and %d vertices." % (pos_idx.shape[0], vtxp.shape[0]))
-#
-#     # Create position/triangle index tensors
-#     pos_idx = torch.from_numpy(pos_idx.astype(np.int32)).cuda()
-#     # col_idx = torch.from_numpy(col_idx.astype(np.int32)).cuda()
-#     vtx_pos = torch.from_numpy(vtxp.astype(np.float32)).cuda()
-#     # vtx_col = torch.from_numpy(vtxc.astype(np.float32)).cuda()
-#
-#     # scale default cube from -0.5, 0.5 to -1, 1
-#     vtx_pos = vtx_pos * 2
-#
-#     glctx = create_cuda_raster_context('cuda:0')
-#
-#     a_mvp = generate_mvp_matrices(100)
-#
-#     # Run.
-#     compute_partial_views(
-#         vtx_pos,
-#         pos_idx,
-#         glctx,
-#         a_mvp
-#     )
-#
-#     # Done.
-#     print("Done.")
-def some_test():
-    num_views = 1
-    mvp, dir =generate_mvp_matrices(num_views)
-    print()
-
-# #----------------------------------------------------------------------------
-if __name__ == "__main__":
-    # main()
-    some_test()
-#----------------------------------------------------------------------------
