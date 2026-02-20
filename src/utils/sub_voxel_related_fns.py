@@ -1,6 +1,6 @@
 import torch
 from typing import Tuple
-from Mesh_Preparation.subvolume_devision import (
+from training.subvolume_devision import (
     subvdivide_voxel_with_batch,
     extract_empty_sub_voxel_indices_from_voxel,
 extract_outside_sub_voxel_indices_from_voxel
@@ -11,10 +11,7 @@ def sub_divide_gt_and_normalize(gt_sdf_full_voxel: torch.Tensor, number_of_sub_v
     sub_voxels = subvdivide_voxel_with_batch(gt_sdf_full_voxel.clone(), target_resolution).to(device=gt_sdf_full_voxel.device)
     assert sub_voxels.shape == (batch_size, number_of_sub_voxels, target_resolution, target_resolution, target_resolution)
     # normalization--------------------------------------------------------------------------------------------------------------
-    # if target_resolution == 32 :
     sub_voxels = sub_voxels * 2.0  # 2*value_range
-    # elif target_resolution == 16:
-    #     sub_voxels = sub_voxels * 2.0  # 2*value_range #TODO, it is independent of target reolution , checkme!
     return sub_voxels.clone()
 
 

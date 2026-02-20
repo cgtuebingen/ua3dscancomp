@@ -1,10 +1,11 @@
 import torch
 from typing import Any
 
-from Mesh_Preparation.subvolume_devision import (
+from training.subvolume_devision import (
     collect_sub_voxels_to_voxel_with_batch,
 )
-from Visualization.m_cube_fns import make_mcubes_from_voxels_obj_for_eval,make_mcubes_from_voxels_obj_for_pad
+from utils.m_cube_fns import make_mcubes_from_voxels_obj_for_pad
+
 def decode_data_for_vis(data_vis: torch.Tensor, dict_arguments_of_variables: dict, fdecoder):
     number_of_sub_voxels = dict_arguments_of_variables["number_of_sub_voxels"]
     target_resolution = dict_arguments_of_variables["target_resolution"]

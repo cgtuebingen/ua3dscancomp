@@ -1,7 +1,8 @@
 import sys
 from typing import Tuple, Any
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('..')
+
 import torch
 from torch import nn, Tensor
 import pytorch_lightning as pl

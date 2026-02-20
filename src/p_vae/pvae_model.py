@@ -2,7 +2,8 @@ import pytorch_lightning as pl
 import torch
 from torch import nn
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('..')
+
 # from Networks import autoencoder as ae
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 class ConvBlock(pl.LightningModule):

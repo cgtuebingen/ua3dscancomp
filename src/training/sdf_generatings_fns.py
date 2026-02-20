@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/Partial3DScanCompletion/')
+sys.path.append('..')
 
 # sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/Partial3DScanCompletion/pycu3d/build/')
 import torch

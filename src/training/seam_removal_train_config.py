@@ -1,6 +1,7 @@
 import os
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('..')
+
 from seam_removal_train import RemoveSeams
 from pytorch_lightning.strategies import DDPStrategy
 import argparse

@@ -1,5 +1,7 @@
 import os
 import sys
+sys.path.append('..')
+
 if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2"
 import numpy as np
@@ -11,7 +13,6 @@ import msgpack_numpy as m
 import torch
 from typing import Tuple
 m.patch()
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/Partial3DScanCompletion/')
 # from tqdm import tqdm
 from Partial3DScan.Developement.data_processing.sdf_generatings_fns import calculate_sdf_and_dots_cuda
 from Partial3DScan.Developement.uncertainty_processing.uncertainity_fns import calculate_uncertainty_h8, combine_distribution, calculate_uncertainty_h8_grid_search

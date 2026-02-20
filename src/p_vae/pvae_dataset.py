@@ -1,6 +1,7 @@
 import sys
 
-sys.path.append("/home/zakeri/Documents/Codes/MyCodes/Proposal2/SDF_VAE/")
+sys.path.append('..')
+
 import os
 import pytorch_lightning as pl
 

@@ -1,6 +1,7 @@
 import os
 import sys
-sys.path.append('./')
+sys.path.append('..')
+
 import argparse
 from eval import EvalObjaverse
 
@@ -117,7 +118,7 @@ if __name__ == "__main__":
 
     ckpt_path = "path_to_shape_completion_checkpoint"
 
-    eval_root = "/path_to_eval_roo/"
+    eval_root = "/path_to_eval_root/"
     eval_dir = os.path.join(eval_root, 'test')
     if not os.path.isdir(eval_dir):
         os.mkdir(eval_dir)

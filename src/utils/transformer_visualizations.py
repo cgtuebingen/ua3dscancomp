@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append("..")
 
 from utils.plot_voxel import plot_v
 def generate_plot_for_given_dict_of_items(dict_of_items: dict, resolution: torch.int32, number_of_slices: torch.int32, plot_scale_factor: torch.int32, plot_range: float) -> list:
@@ -153,7 +153,6 @@ def plot_everything(
         ],
         -1,
     )
-    # print("\n validation_epoch_end plot type:", type(plot), ", shape:", plot.shape)
     del image_gt
     del image_non_optim
     del image_masked

@@ -1,6 +1,7 @@
 import os
 import sys
-sys.path.append('/home/zakeri/Documents/Codes/MyCodes/Proposal2/ua3dscancomp-gitbub/src/')
+sys.path.append('..')
+
 import torch
 import pytorch_lightning as pl
 
