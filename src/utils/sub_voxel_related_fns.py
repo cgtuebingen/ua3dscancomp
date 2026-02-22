@@ -1,6 +1,6 @@
 import torch
 from typing import Tuple
-from training.subvolume_devision import (
+from utils.subvolume_devision import (
     subvdivide_voxel_with_batch,
     extract_empty_sub_voxel_indices_from_voxel,
 extract_outside_sub_voxel_indices_from_voxel

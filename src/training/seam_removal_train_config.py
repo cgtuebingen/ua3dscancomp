@@ -1,6 +1,7 @@
 import os
 import sys
-sys.path.append('..')
+
+sys.path.append("..")
 
 from seam_removal_train import RemoveSeams
 from pytorch_lightning.strategies import DDPStrategy
@@ -8,6 +9,7 @@ import argparse
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning.callbacks import LearningRateMonitor
+
 
 def main(eval_root: str):
     parser = argparse.ArgumentParser()
@@ -23,24 +25,24 @@ def main(eval_root: str):
     #
     parser.add_argument(
         "--train_lmdb_path",
-        default="/graphics/scratch3/staff/zakeri/LMDBs/filtered_objaverse_joined_lmdb/_train_combined/",  # dataset for full mesh with 128^3
+        default="/path_to_train_lmdb/_train_combined/",  # dataset for full mesh with 128^3
         type=str,
     )
 
     parser.add_argument(
         "--val_lmdb_path",
-        default="/ceph/zakeri/LMDB/filtered_objaverse_joined_lmdb_withLatentCodes/val/_val_withLatentCodes__0_1909.mdb",  # dataset for full mesh with 128^3
+        default="/path_to_validation_lmdb/_val_withLatentCodes__0_1909.mdb",  # dataset for full mesh with 128^3
         type=str,
     )
 
     parser.add_argument(
         "--test_lmdb_path",
-        default="/ceph/zakeri/LMDB/filtered_objaverse_joined_lmdb_withLatentCodes/test/_test_withLatentCodes__0_5000.mdb",  # dataset for full mesh with 128^3
+        default="/path_to_test_lmdb/_test_withLatentCodes__0_5000.mdb",  # dataset for full mesh with 128^3
         type=str,
     )
     parser.add_argument(
         "--mesh_path",
-        default="/graphics/scratch2/datasets/objaverse1.0_processed/",
+        default="/path_to_datasets_objaverse1.0_processed/",
         type=str,
     )
 
@@ -48,19 +50,25 @@ def main(eval_root: str):
     # on ceph
     parser.add_argument(
         "--vae_checkpoint_path",
-        default="/ceph/zakeri/vae_checkpoint/checkpoint-epoch=193-loss=0.000.ckpt/",
+        default="/path_to_vae_checkpoint/",
         type=str,
     )
     parser.add_argument(
         "--marching_cube_result_dir",
-        default="/ceph/zakeri/ParticalScanComletion/training_logs/bf16_mixed/seam_removal/conv3d/mcube_res_dir/",
+        default="/path_to_GT_data/marching_cube_result_dir/",
         type=str,
     )
 
     # hparams for transformer
-    parser.add_argument("--layers", default=18, type=int)  # layers: Number of transformer layers.
-    parser.add_argument("--dim_size", default=512 * 4, type=int)  # Dimensionality of latent space in transformer.
-    parser.add_argument("--heads", default=16, type=int)  # heads: Number of attention heads.
+    parser.add_argument(
+        "--layers", default=18, type=int
+    )  # layers: Number of transformer layers.
+    parser.add_argument(
+        "--dim_size", default=512 * 4, type=int
+    )  # Dimensionality of latent space in transformer.
+    parser.add_argument(
+        "--heads", default=16, type=int
+    )  # heads: Number of attention heads.
     parser.add_argument("--pre_trained", default=True, type=bool)
 
     parser.add_argument("--image_resolution", default=256, type=int)
@@ -69,24 +77,32 @@ def main(eval_root: str):
     parser.add_argument("--previous_model_ckpt_path", type=str, default="")
     # test and eval:
     parser.add_argument("--num_samples", default=1000000, type=int)
-    parser.add_argument("--num_views_for_test", default=3, type=int)  # TODO required
+    parser.add_argument("--num_views_for_test", default=3, type=int)
 
     parser.add_argument(
         "--first_transformer_ckpt",
-        default="/ceph/zakeri/ParticalScanComletion/training_logs/bf16_mixed/lightning_logs/version_10/checkpoints/last.ckpt",
+        default="/path_to_shape_completion_checkpoint/",
         type=str,
+        required=True,
     )
     args = parser.parse_args()
 
-    obj_dir = os.path.join(eval_root, "obj_dir" + "_num_views-" + str(args.num_views_for_test) + "/")
+    obj_dir = os.path.join(
+        eval_root, "obj_dir" + "_num_views-" + str(args.num_views_for_test) + "/"
+    )
     if not os.path.isdir(obj_dir):
         os.mkdir(obj_dir)
     # just for rendering
-    rendered_obj_dir = os.path.join(eval_root, "rendered_obj_dir" + "_num_views-" + str(args.num_views_for_test) + "/")
+    rendered_obj_dir = os.path.join(
+        eval_root,
+        "rendered_obj_dir" + "_num_views-" + str(args.num_views_for_test) + "/",
+    )
     if not os.path.isdir(rendered_obj_dir):
         os.mkdir(rendered_obj_dir)
 
-    eval_dir = os.path.join(eval_root, "eval_dir" + "_num_views-" + str(args.num_views_for_test) + "/")
+    eval_dir = os.path.join(
+        eval_root, "eval_dir" + "_num_views-" + str(args.num_views_for_test) + "/"
+    )
     if not os.path.isdir(eval_dir):
         os.mkdir(eval_dir)
     # write the checkpoints every 1000 steps
@@ -101,33 +117,33 @@ def main(eval_root: str):
     )
     lr_Monitor = LearningRateMonitor(logging_interval="step")
     model = RemoveSeams(
-            latent_dim=args.latent_dim,
-            resolution=args.resolution,
-            target_resolution=args.target_resolution,
-            batch_size=args.batch_size,
-            val_batch_size=args.val_batch_size,
-            learning_rate=args.learning_rate,
-            warmup_ratio=args.warmup_ratio,
-            train_lmdb_path=args.train_lmdb_path,
-            val_lmdb_path=args.val_lmdb_path,
-            test_lmdb_path=args.test_lmdb_path,
-            mesh_path=args.mesh_path,
-            value_range=args.value_range,
-            vae_checkpoint_path=args.vae_checkpoint_path,
-            marching_cube_result_dir=args.marching_cube_result_dir,
-            layers=args.layers,
-            dim_size=args.dim_size,
-            heads=args.heads,
-            pre_trained=args.pre_trained,
-            image_resolution=args.image_resolution,
-            resume_on_previous_model=args.resume_on_previous_model,
-            previous_model_ckpt_path=args.previous_model_ckpt_path,
-            eval_dir=eval_dir,
-            obj_dir=obj_dir,
-            num_samples=args.num_samples,
-            num_views_for_test=args.num_views_for_test,
-            first_transformer_ckpt=args.first_transformer_ckpt,
-        )
+        latent_dim=args.latent_dim,
+        resolution=args.resolution,
+        target_resolution=args.target_resolution,
+        batch_size=args.batch_size,
+        val_batch_size=args.val_batch_size,
+        learning_rate=args.learning_rate,
+        warmup_ratio=args.warmup_ratio,
+        train_lmdb_path=args.train_lmdb_path,
+        val_lmdb_path=args.val_lmdb_path,
+        test_lmdb_path=args.test_lmdb_path,
+        mesh_path=args.mesh_path,
+        value_range=args.value_range,
+        vae_checkpoint_path=args.vae_checkpoint_path,
+        marching_cube_result_dir=args.marching_cube_result_dir,
+        layers=args.layers,
+        dim_size=args.dim_size,
+        heads=args.heads,
+        pre_trained=args.pre_trained,
+        image_resolution=args.image_resolution,
+        resume_on_previous_model=args.resume_on_previous_model,
+        previous_model_ckpt_path=args.previous_model_ckpt_path,
+        eval_dir=eval_dir,
+        obj_dir=obj_dir,
+        num_samples=args.num_samples,
+        num_views_for_test=args.num_views_for_test,
+        first_transformer_ckpt=args.first_transformer_ckpt,
+    )
 
     # configure the pytorch-lightning trainer.
     trainer = pl.Trainer(
@@ -140,12 +156,12 @@ def main(eval_root: str):
         log_every_n_steps=100,
         callbacks=[checkpoint_callback, lr_Monitor],
         val_check_interval=100,
-        default_root_dir="/graphics/scratch2/staff/zakeri/tmp/",
+        default_root_dir="/path_to_tensorboard_log_root/",
         precision="bf16-mixed",
-
     )
     trainer.fit(model)
     print("CUDA_VISIBLE_DEVICES", os.environ["CUDA_VISIBLE_DEVICES"])
+
 
 if __name__ == "__main__":
 
@@ -153,9 +169,9 @@ if __name__ == "__main__":
     print("torch.cuda.device_count()", torch.cuda.device_count())
     print("torch.cuda.nccl.version()", torch.cuda.nccl.version())
 
-    torch.multiprocessing.set_start_method('spawn')
+    torch.multiprocessing.set_start_method("spawn")
 
-    torch.set_float32_matmul_precision('high')
+    torch.set_float32_matmul_precision("high")
 
-    eval_root = "/graphics/scratch2/staff/zakeri/tmp/"
+    eval_root = "/path_to_eval_root/"
     main(eval_root)

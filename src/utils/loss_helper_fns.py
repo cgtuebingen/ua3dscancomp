@@ -25,9 +25,9 @@ def create_log_losses_(loss_dict: dict, stage: str) -> dict:
         f"{log_prefix}/l1_loss_empty": l1_loss_empty.detach(),
         f"{log_prefix}/l1_loss_non_empty": l1_loss_non_empty.detach(),
         f"{log_prefix}/l1_loss": l1_loss.detach(),
-
     }
     return loss_log
+
 
 def create_log_losses_for_given_dict(loss_dict: dict, stage: str):
     log_prefix = stage

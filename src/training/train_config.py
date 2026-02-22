@@ -38,7 +38,7 @@ def main(eval_root: str):
 
     parser.add_argument(
         "--test_lmdb_path",
-        default="path_to_test_lmdb/_test_withLatentCodes__0_5000.mdb",  # dataset for full mesh with 128^3
+        default="/path_to_test_lmdb/_test_withLatentCodes__0_5000.mdb",  # dataset for full mesh with 128^3
         type=str,
     )
     parser.add_argument(
@@ -82,7 +82,7 @@ def main(eval_root: str):
     parser.add_argument("--num_samples", default=1000000, type=int)
     parser.add_argument(
         "--num_views_for_test", required=True, type=int
-    )  # TODO required
+    )
 
     # num_gpus = 3
     # num_train_steps = len(train_dataset) // (batch_size * num_gpus) * trainer.max_epochs

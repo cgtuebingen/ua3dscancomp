@@ -1,7 +1,7 @@
 import torch
 from typing import Any
 
-from training.subvolume_devision import (
+from utils.subvolume_devision import (
     collect_sub_voxels_to_voxel_with_batch,
 )
 from utils.m_cube_fns import make_mcubes_from_voxels_obj_for_pad
