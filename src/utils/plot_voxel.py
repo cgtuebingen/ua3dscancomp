@@ -3,7 +3,14 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 
-def plot_v(gt_sdf_voxel: np.array, number_of_slices: int, resolution: int, title: str, plot_range: list[float], cmap: str = "seismic"):
+def plot_v(
+    gt_sdf_voxel: np.array,
+    number_of_slices: int,
+    resolution: int,
+    title: str,
+    plot_range: list[float],
+    cmap: str = "seismic",
+):
     # min_sdf = np.min(gt_sdf_voxel)
     # max_sdf = np.max(gt_sdf_voxel)
     # value_limit = max(np.abs(min_sdf), np.abs(max_sdf))
@@ -21,13 +28,15 @@ def plot_v(gt_sdf_voxel: np.array, number_of_slices: int, resolution: int, title
         canvas = FigureCanvas(fig)
         ax = fig.add_subplot(111)
         center = int(gt_sdf_voxel.shape[0] / 2)
-        if (number_of_slices + center < gt_sdf_voxel.shape[0]):
+        if number_of_slices + center < gt_sdf_voxel.shape[0]:
             gt_sdf_voxel_slice = gt_sdf_voxel[int(i + center), :, :]
-            title = title + '_' + '_slice' + str(i)
+            title = title + "_" + "_slice" + str(i)
 
             ax.set_title(title, fontsize=8)
             ax.set_axis_off()
-            plot = ax.imshow(gt_sdf_voxel_slice, origin="lower", cmap=cmap, interpolation="none")
+            plot = ax.imshow(
+                gt_sdf_voxel_slice, origin="lower", cmap=cmap, interpolation="none"
+            )
 
             plot.set_clim(plot_range[0], plot_range[1])
             fig.colorbar(plot, ax=ax)

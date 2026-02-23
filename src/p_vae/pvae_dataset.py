@@ -1,24 +1,19 @@
 import sys
 
-sys.path.append('..')
+sys.path.append("..")
 
 import os
 import pytorch_lightning as pl
 
-# disable CUDA
 import numpy as np
 
-# from typing import List, Iterable
 import lmdb
 import msgpack
 import msgpack_numpy as m
 
 m.patch()
-# from tqdm.auto import tqdm
-#
-#
-# import torch
-# # import argparse
+
+
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 class ReadLMDBDataset(pl.LightningDataModule):
     def __init__(
@@ -48,37 +43,64 @@ class ReadLMDBDataset(pl.LightningDataModule):
         self.len: int
         self.my_lmdb = None
 
-        if (os.path.isdir(lmdb_path)):  # if the database exists already:
+        if os.path.isdir(lmdb_path):  # if the database exists already:
             with lmdb.open(
-                    lmdb_path,
-                    max_dbs=2,
-                    readonly=True,
-                    lock=True,
-                    readahead=True,
-                    map_size=32 * 1024 * 1024 * 1024 * 1024,
-                    max_readers=50,
+                lmdb_path,
+                max_dbs=2,
+                readonly=True,
+                lock=True,
+                readahead=True,
+                map_size=32 * 1024 * 1024 * 1024 * 1024,
+                max_readers=50,
             ) as my_lmdb:
                 with my_lmdb.begin(write=False) as lmdb_txn:  # read it
                     self.mesh_path = msgpack.unpackb(lmdb_txn.get(b"__mesh_path__"))
-                    self.points_to_sample = msgpack.unpackb(lmdb_txn.get(b"__points_to_sample__"))
-                    self.examples_per_epoch = msgpack.unpackb(lmdb_txn.get(b"__examples_per_epoch__"))
-                    self.query_number = msgpack.unpackb(lmdb_txn.get(b"__query_number__"))
+                    self.points_to_sample = msgpack.unpackb(
+                        lmdb_txn.get(b"__points_to_sample__")
+                    )
+                    self.examples_per_epoch = msgpack.unpackb(
+                        lmdb_txn.get(b"__examples_per_epoch__")
+                    )
+                    self.query_number = msgpack.unpackb(
+                        lmdb_txn.get(b"__query_number__")
+                    )
                     self.value_range = msgpack.unpackb(lmdb_txn.get(b"__value_range__"))
                     self.resolution = msgpack.unpackb(lmdb_txn.get(b"__resolution__"))
-                    self.keys = msgpack.unpackb(lmdb_txn.get(b"__keys__"))  # list of keys
+                    self.keys = msgpack.unpackb(
+                        lmdb_txn.get(b"__keys__")
+                    )  # list of keys
                     self.len = len(self.keys)
-                    if ((self.points_to_sample != points_to_sample) or (self.examples_per_epoch != examples_per_epoch) or (self.resolution != resolution) or (self.query_number != query_number) or (
-                            self.value_range != value_range)):
-                        print("\n warning: LMDB has different points_to_sample:", self.points_to_sample)
-                        print("\n warning: LMDB has different examples_per_epoch:", self.examples_per_epoch)
-                        print("\n warning: LMDB has different resolution:", self.resolution)
-                        print("\n warning: LMDB has different query_number:", self.query_number)
-                        print("\n warning: LMDB has different value_range:", self.value_range)
+                    if (
+                        (self.points_to_sample != points_to_sample)
+                        or (self.examples_per_epoch != examples_per_epoch)
+                        or (self.resolution != resolution)
+                        or (self.query_number != query_number)
+                        or (self.value_range != value_range)
+                    ):
+                        print(
+                            "\n warning: LMDB has different points_to_sample:",
+                            self.points_to_sample,
+                        )
+                        print(
+                            "\n warning: LMDB has different examples_per_epoch:",
+                            self.examples_per_epoch,
+                        )
+                        print(
+                            "\n warning: LMDB has different resolution:",
+                            self.resolution,
+                        )
+                        print(
+                            "\n warning: LMDB has different query_number:",
+                            self.query_number,
+                        )
+                        print(
+                            "\n warning: LMDB has different value_range:",
+                            self.value_range,
+                        )
         else:  # if it does not exist
             raise ("\n LMDB does not exits")
 
     def __len__(self):
-        # print("\n len fn: ", len(self.keys))
         return self.len
 
     def openLMDB(self, path: str):
@@ -86,7 +108,7 @@ class ReadLMDBDataset(pl.LightningDataModule):
             path,
             max_dbs=2,
             readonly=True,  # we just want to read it
-            lock=False,     # reading!!
+            lock=False,  # reading!!
             readahead=False,
             map_size=32 * 1024 * 1024 * 1024,
             max_readers=10000,
@@ -96,7 +118,9 @@ class ReadLMDBDataset(pl.LightningDataModule):
 
     def __getitem__(self, idx: int):
         if self.my_lmdb is None:  # if database object is none
-            self.my_lmdb = self.openLMDB(self.lmdb_path)  # create an object and open the database
+            self.my_lmdb = self.openLMDB(
+                self.lmdb_path
+            )  # create an object and open the database
 
         if idx < 0 or idx is None:
             raise "invalid item index"
@@ -105,9 +129,13 @@ class ReadLMDBDataset(pl.LightningDataModule):
             idx = idx % len(self.keys)  # reduce the idx to the len(keys)
         key = self.keys[idx]
 
-        with self.my_lmdb.begin(write=False) as lmdb_txn:  # reading what is written before using the object
+        with self.my_lmdb.begin(
+            write=False
+        ) as lmdb_txn:  # reading what is written before using the object
             raw_example = msgpack.unpackb(lmdb_txn.get(msgpack.packb(key)))
-            gt_sdf_voxel = np.array(raw_example["gt_sdf_voxel"], copy=True)  # FIXME change the type as well
+            gt_sdf_voxel = np.array(
+                raw_example["gt_sdf_voxel"], copy=True
+            )  # FIXME change the type as well
             d = np.array(raw_example["d"], copy=True)
             left = np.array(raw_example["left"], copy=True)
             x_offset = np.array(raw_example["x_offset"], copy=True)
@@ -134,57 +162,19 @@ class ReadLMDBDataset(pl.LightningDataModule):
         front_copy = front.copy()
         z_offset_copy = z_offset.copy()
 
-        # # Some tests:
-        # if np.any(np.isnan(gt_sdf_voxel)) or np.any(np.isinf(gt_sdf_voxel)):
-        #     print("DEBUG: There are infs or nans in 'gt_sdf_voxel'!")
-        #     breakpoint()
-        #
-        # if np.any(np.isnan(d)) or np.any(np.isinf(d)):
-        #     print("DEBUG: There are infs or nans in 'd'!")
-        #     breakpoint()
-
-        # assert gt_sdf_voxel_copy.shape == (self.target_resolution, self.target_resolution, self.target_resolution)
-
-        return [key, mesh_file_name, gt_sdf_voxel_copy, d_copy, left_copy, x_offset_copy, top_copy, y_offset_copy, front_copy, z_offset_copy, folder, label, dataset_index, sub_folder_index]  # for vae training
-
-# def TestLMDB(stage: str):
-#     mesh_path = "/graphics/scratch2/staff/zakeri/LMDBs/ShapeNetCorev2_remeshed_0.008/ShapeNetCore.v2/"
-#
-#     points_to_sample = 64
-#     resolution = 128
-#     target_resolution = 32
-#     value_range = 1
-#     examples_per_epoch = 1000
-#     query_number = 1000
-#
-#     lmdb_path = "/graphics/scratch2/staff/zakeri/LMDBs/shapenetcorev2Excludingcorev1validation_SDF_SpanningMultiResVoxelPLUSPC32_64/"  # where the new lmdb_is
-#
-#     train_val_dict_path = "/graphics/scratch2/staff/zakeri/LMDBs/ShapeNetCorev2_remeshed_0.008_train_val_dictionaries/"
-#     if stage == 'training':
-#         train_dict_path = os.path.join(train_val_dict_path, "train_dataset_dict")
-#         train_dict = torch.load(train_dict_path)
-#
-#         lmdb_path = os.path.join(lmdb_path, "shapenetcorev2Excludingcorev1validation_SDF_SpanningMultiResVoxelPLUSPC32_64_train")
-#
-#         train_dataset = ReadLMDBDataset(train_dict, mesh_path, target_resolution, points_to_sample, query_number, lmdb_path, value_range, resolution,  examples_per_epoch)
-#         print("\n len train_dataset:", len(train_dataset))
-#         for t in tqdm(range(len(train_dataset)), desc="Training samples"):
-#             train_sample = train_dataset[t]
-#             object_index, mesh_file_name, gt_sdf_voxel, d, left, x_offset, top, y_offset, front, z_offset_copy, folder, label, dataset_index, sub_folder_index = train_sample
-#
-#     elif stage == 'val':
-#         val_dict_path = os.path.join(train_val_dict_path, "val_dataset_dict")
-#         val_dict = torch.load(val_dict_path)
-#
-#         lmdb_path = os.path.join(lmdb_path, "shapenetcorev2Excludingcorev1validation_SDF_SpanningMultiResVoxelPLUSPC32_64_val")
-#
-#         val_dataset = ReadLMDBDataset(val_dict, mesh_path, target_resolution, points_to_sample, query_number, lmdb_path, value_range, resolution, examples_per_epoch)
-#         print("\n len val_dataset:", len(val_dataset))
-#         for v in tqdm(range(len(val_dataset)), desc="Validation samples"):
-#             val_sample = val_dataset[v]
-#             object_index, mesh_file_name, gt_sdf_voxel, d, left, x_offset, top, y_offset, front, z_offset_copy, folder, label, dataset_index, sub_folder_index = val_sample
-#     else:
-#         raise "No stage defined!"
-#
-# if __name__ == "__main__":
-#     TestLMDB(stage='training')
+        return [
+            key,
+            mesh_file_name,
+            gt_sdf_voxel_copy,
+            d_copy,
+            left_copy,
+            x_offset_copy,
+            top_copy,
+            y_offset_copy,
+            front_copy,
+            z_offset_copy,
+            folder,
+            label,
+            dataset_index,
+            sub_folder_index,
+        ]  # for vae training

@@ -3,9 +3,10 @@ import torch
 from tqdm import tqdm
 from pycu3d.test.evaluate_all import EVALALLMETRICS
 
+
 def evaluate_all(dict_args_eval: dict, dict_args_variables: dict) -> dict:
     object_index = dict_args_eval["Object_index"]
-    num_samples = dict_args_eval['num_samples']
+    num_samples = dict_args_eval["num_samples"]
 
     # voxels depaccked
     completed_voxel = dict_args_eval["Completed_voxel"]
@@ -56,9 +57,13 @@ def evaluate_all(dict_args_eval: dict, dict_args_variables: dict) -> dict:
         chamfer_l1 = eval_obj.eval_chamfer_3ds2vs(completed_pc, gt_pc)
         chamfer_l1 = chamfer_l1 * hausdorff_scale
 
-        fscore_one_percent = eval_obj.eval_fscore_pc_cud3d(completed_pc, gt_pc, thres=0.02)  # my one percent=0.02(my side length is 2), shapenet diagonal len is 1
+        fscore_one_percent = eval_obj.eval_fscore_pc_cud3d(
+            completed_pc, gt_pc, thres=0.02
+        )  # my one percent=0.02(my side length is 2), shapenet diagonal len is 1
 
-        if torch.isnan(torch.tensor(fscore_one_percent)) or torch.isnan(torch.tensor(fscore_one_percent)):
+        if torch.isnan(torch.tensor(fscore_one_percent)) or torch.isnan(
+            torch.tensor(fscore_one_percent)
+        ):
             fscore_one_percent = -1
 
         # uhd = eval_obj.eval_uhd(partial_pc, completed_pc)
@@ -72,17 +77,25 @@ def evaluate_all(dict_args_eval: dict, dict_args_variables: dict) -> dict:
         if torch.isnan(torch.tensor(hausdorff)) or torch.isnan(torch.tensor(hausdorff)):
             hausdorff = -1
 
-        normal_consistency, inaccurate_normals = eval_obj.eval_nc_and_in(completed_pc, gt_pc)
+        normal_consistency, inaccurate_normals = eval_obj.eval_nc_and_in(
+            completed_pc, gt_pc
+        )
 
-        if torch.isnan(torch.tensor(normal_consistency)) or torch.isnan(torch.tensor(normal_consistency)):
+        if torch.isnan(torch.tensor(normal_consistency)) or torch.isnan(
+            torch.tensor(normal_consistency)
+        ):
             normal_consistency = -1
 
-        if torch.isnan(torch.tensor(inaccurate_normals)) or torch.isnan(torch.tensor(inaccurate_normals)):
+        if torch.isnan(torch.tensor(inaccurate_normals)) or torch.isnan(
+            torch.tensor(inaccurate_normals)
+        ):
             inaccurate_normals = -1
 
         completeness = eval_obj.eval_completeness(completed_pc, gt_pc, thres=0.03)
 
-        if torch.isnan(torch.tensor(completeness)) or torch.isnan(torch.tensor(completeness)):
+        if torch.isnan(torch.tensor(completeness)) or torch.isnan(
+            torch.tensor(completeness)
+        ):
             completeness = -1
 
     # pack all the eval results together
@@ -98,14 +111,16 @@ def evaluate_all(dict_args_eval: dict, dict_args_variables: dict) -> dict:
         "completeness": completeness,
         "chamfer_l1": chamfer_l1,
         "object_index": object_index.detach().item(),
-
     }
     return eval_results
+
 
 def write_evaluation_result(eval_results: dict, eval_dir: str):
 
     object_index = eval_results["object_index"]
-    pickle_name = os.path.join(eval_dir, "eval_results_for_" + "objID=" + str(object_index) + ".pkl")
+    pickle_name = os.path.join(
+        eval_dir, "eval_results_for_" + "objID=" + str(object_index) + ".pkl"
+    )
     if os.path.isdir(eval_dir):
         torch.save(
             eval_results,
@@ -139,10 +154,12 @@ def write_dict_eval_into_text(dict_data: dict, out_path: str, name: str) -> None
     else:
         raise ("\n dir for writing eval data does not exist!")
 
+
 def pickle_all_dict_files(eval_file_list: list, eval_dir: str) -> dict:
     eval_file_list_dict = [torch.load(i) for i in eval_file_list]
     out_name = os.path.join(eval_dir, "combined_pickles")
     torch.save(eval_file_list_dict, out_name)
+
 
 def extract_files_with_given_extension_general(eval_dir: str, ext: str) -> list:
     all_files = os.listdir(eval_dir)
@@ -163,13 +180,13 @@ def extract_broken_object_indices(eval_file_list: list, eval_dir: str):
         eval_dict_current = torch.load(eval_file_current)
         object_index_current = eval_dict_current["object_index"]
         # now check for metrics
-        iou_current = eval_dict_current['iou']
-        if ((iou_current == -1) or (torch.isnan(torch.tensor(iou_current)))):
+        iou_current = eval_dict_current["iou"]
+        if (iou_current == -1) or (torch.isnan(torch.tensor(iou_current))):
             print("iou nan")
             broken_object_index_all.append(object_index_current)
 
-        fscore_current = eval_dict_current['fscore']
-        if ((fscore_current == -1) or (torch.isnan(torch.tensor(fscore_current)))):
+        fscore_current = eval_dict_current["fscore"]
+        if (fscore_current == -1) or (torch.isnan(torch.tensor(fscore_current))):
             print("fscore nan ")
             broken_object_index_all.append(object_index_current)
 
@@ -178,38 +195,46 @@ def extract_broken_object_indices(eval_file_list: list, eval_dir: str):
         #     print("uhd -1")
         #     broken_object_index_all.append(object_index_current)
         #
-        fscore_one_percent = eval_dict_current['fscore1%']
-        if ((fscore_one_percent == -1) or (torch.isnan(torch.tensor(fscore_one_percent)))):
+        fscore_one_percent = eval_dict_current["fscore1%"]
+        if (fscore_one_percent == -1) or (
+            torch.isnan(torch.tensor(fscore_one_percent))
+        ):
             print("fscore_one_percent nan")
             broken_object_index_all.append(object_index_current)
 
-        hausdorff_current = eval_dict_current['hausdorff']
-        if (hausdorff_current == -1 or (torch.isnan(torch.tensor(hausdorff_current)))):
+        hausdorff_current = eval_dict_current["hausdorff"]
+        if hausdorff_current == -1 or (torch.isnan(torch.tensor(hausdorff_current))):
             print("hausdorff_current -1")
             broken_object_index_all.append(object_index_current)
 
-        normal_consistency_current = eval_dict_current['normal_consistency']
-        if (normal_consistency_current == -1 or (torch.isnan(torch.tensor(normal_consistency_current)))):
+        normal_consistency_current = eval_dict_current["normal_consistency"]
+        if normal_consistency_current == -1 or (
+            torch.isnan(torch.tensor(normal_consistency_current))
+        ):
             print("normal_consistency_current -1")
             broken_object_index_all.append(object_index_current)
 
-        inaccurate_normals_current = eval_dict_current['inaccurate_normals']
-        if (inaccurate_normals_current == -1 or (torch.isnan(torch.tensor(inaccurate_normals_current)))):
+        inaccurate_normals_current = eval_dict_current["inaccurate_normals"]
+        if inaccurate_normals_current == -1 or (
+            torch.isnan(torch.tensor(inaccurate_normals_current))
+        ):
             print("inaccurate_normals_current -1")
             broken_object_index_all.append(object_index_current)
 
-        completeness_current = eval_dict_current['completeness']
-        if (completeness_current == -1 or (torch.isnan(torch.tensor(completeness_current)))):
+        completeness_current = eval_dict_current["completeness"]
+        if completeness_current == -1 or (
+            torch.isnan(torch.tensor(completeness_current))
+        ):
             print("completeness_current -1")
             broken_object_index_all.append(object_index_current)
 
-        chamfer_current = eval_dict_current['chamfer']
-        if (chamfer_current == -1 or (torch.isnan(torch.tensor(chamfer_current)))):
+        chamfer_current = eval_dict_current["chamfer"]
+        if chamfer_current == -1 or (torch.isnan(torch.tensor(chamfer_current))):
             print("chamfer_current -1")
             broken_object_index_all.append(object_index_current)
 
-        chamfer_l1_current = eval_dict_current['chamfer_l1']
-        if (chamfer_current == -1 or (torch.isnan(torch.tensor(chamfer_l1_current)))):
+        chamfer_l1_current = eval_dict_current["chamfer_l1"]
+        if chamfer_current == -1 or (torch.isnan(torch.tensor(chamfer_l1_current))):
             print("chamfer_l1_current -1")
             broken_object_index_all.append(object_index_current)
 
@@ -219,11 +244,14 @@ def extract_broken_object_indices(eval_file_list: list, eval_dir: str):
         # Iterating over each element of the list
         for line in broken_object_index_all:
             out.write(str(line))  # Adding the line to the text.txt
-            out.write('\n')  # Adding a new line character
+            out.write("\n")  # Adding a new line character
 
     return broken_object_index_all
 
-def extract_metric_results(eval_dir, output_name: str, broken_object_index_all: list, combined_pickles: dict):
+
+def extract_metric_results(
+    eval_dir, output_name: str, broken_object_index_all: list, combined_pickles: dict
+):
     iou_all = []
     fscore_all = []
     uhd_all = []
@@ -241,14 +269,14 @@ def extract_metric_results(eval_dir, output_name: str, broken_object_index_all: 
         if object_index_current in broken_object_index_all:
             continue
         else:
-            iou_current = eval_dict_current['iou']
-            if ((iou_current == -1) or (torch.isnan(torch.tensor(iou_current)))):
+            iou_current = eval_dict_current["iou"]
+            if (iou_current == -1) or (torch.isnan(torch.tensor(iou_current))):
                 raise ("iou nan")
             else:
                 iou_all.append(iou_current)
 
-            fscore_current = eval_dict_current['fscore']
-            if ((fscore_current == -1) or (torch.isnan(torch.tensor(fscore_current)))):
+            fscore_current = eval_dict_current["fscore"]
+            if (fscore_current == -1) or (torch.isnan(torch.tensor(fscore_current))):
                 raise ("fscore nan ")
             else:
                 fscore_all.append(fscore_current)
@@ -259,44 +287,56 @@ def extract_metric_results(eval_dir, output_name: str, broken_object_index_all: 
             # else:
             #     uhd_all.append(uhd_current)
 
-            fscore_one_percent = eval_dict_current['fscore1%']
-            if ((fscore_one_percent == -1) or (torch.isnan(torch.tensor(fscore_one_percent)))):
+            fscore_one_percent = eval_dict_current["fscore1%"]
+            if (fscore_one_percent == -1) or (
+                torch.isnan(torch.tensor(fscore_one_percent))
+            ):
                 raise ("fscore_one_percent nan")
             else:
                 fscore_one_percent_all.append(fscore_one_percent)
 
-            hausdorff_current = eval_dict_current['hausdorff']
-            if (hausdorff_current == -1  or (torch.isnan(torch.tensor(hausdorff_current)))):
+            hausdorff_current = eval_dict_current["hausdorff"]
+            if hausdorff_current == -1 or (
+                torch.isnan(torch.tensor(hausdorff_current))
+            ):
                 raise ("hausdorff_current -1")
             else:
                 hausdorff_all.append(hausdorff_current)
 
-            normal_consistency_current = eval_dict_current['normal_consistency']
-            if (normal_consistency_current == -1 or (torch.isnan(torch.tensor(normal_consistency_current)))):
+            normal_consistency_current = eval_dict_current["normal_consistency"]
+            if normal_consistency_current == -1 or (
+                torch.isnan(torch.tensor(normal_consistency_current))
+            ):
                 raise ("normal_consistency_current -1")
             else:
                 normal_consistency_all.append(normal_consistency_current)
 
-            inaccurate_normals_current = eval_dict_current['inaccurate_normals']
-            if (inaccurate_normals_current == -1 or (torch.isnan(torch.tensor(inaccurate_normals_current)))):
+            inaccurate_normals_current = eval_dict_current["inaccurate_normals"]
+            if inaccurate_normals_current == -1 or (
+                torch.isnan(torch.tensor(inaccurate_normals_current))
+            ):
                 raise ("inaccurate_normals_current -1")
             else:
                 inaccurate_normals_all.append(inaccurate_normals_current)
 
-            completeness_current = eval_dict_current['completeness']
-            if (completeness_current == -1 or (torch.isnan(torch.tensor(completeness_current)))):
+            completeness_current = eval_dict_current["completeness"]
+            if completeness_current == -1 or (
+                torch.isnan(torch.tensor(completeness_current))
+            ):
                 raise ("completeness_current -1")
             else:
                 completeness_all.append(completeness_current)
 
-            chamfer_current = eval_dict_current['chamfer']
-            if (chamfer_current == -1 or (torch.isnan(torch.tensor(chamfer_current)))):
+            chamfer_current = eval_dict_current["chamfer"]
+            if chamfer_current == -1 or (torch.isnan(torch.tensor(chamfer_current))):
                 raise ("chamfer_current -1")
             else:
                 chamfer_all.append(chamfer_current)
 
-            chamfer_l1_current = eval_dict_current['chamfer_l1']
-            if (chamfer_l1_current == -1 or (torch.isnan(torch.tensor(chamfer_l1_current)))):
+            chamfer_l1_current = eval_dict_current["chamfer_l1"]
+            if chamfer_l1_current == -1 or (
+                torch.isnan(torch.tensor(chamfer_l1_current))
+            ):
                 raise ("chamfer_l1_current -1")
             else:
                 chamfer_l1_all.append(chamfer_l1_current)
@@ -324,15 +364,17 @@ def extract_metric_results(eval_dir, output_name: str, broken_object_index_all: 
     chamfer_mean = torch.mean(chamfer_t)
     chamfer_l1_mean = torch.mean(chamfer_l1_t)
     # write them into one file
-    result_dict = {"iou_mean": iou_mean,
-                   "fscore_mean": fscore_mean,
-                   "uhd_mean": -1,
-                   "hausdorff_mean": hausdorff_mean,
-                   "chamfer_l1_mean": chamfer_l1_mean,
-                   "normal_consistency_mean": normal_consistency_mean,
-                   "inaccurate_normals_mean": inaccurate_normals_mean,
-                   "completeness_mean": completeness_mean,
-                   "fscore_one_percent_mean": fscore_one_percent_mean,
-                   "chamfer_mean": chamfer_mean}
+    result_dict = {
+        "iou_mean": iou_mean,
+        "fscore_mean": fscore_mean,
+        "uhd_mean": -1,
+        "hausdorff_mean": hausdorff_mean,
+        "chamfer_l1_mean": chamfer_l1_mean,
+        "normal_consistency_mean": normal_consistency_mean,
+        "inaccurate_normals_mean": inaccurate_normals_mean,
+        "completeness_mean": completeness_mean,
+        "fscore_one_percent_mean": fscore_one_percent_mean,
+        "chamfer_mean": chamfer_mean,
+    }
     write_dict_eval_into_text(result_dict, eval_dir, output_name)
     print("\n Done writing eval results")

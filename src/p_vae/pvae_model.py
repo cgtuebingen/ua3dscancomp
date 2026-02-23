@@ -212,7 +212,6 @@ class VSDecoder(pl.LightningModule):
         # self.conv7_1 = nn.Conv3d(512, 512, kernel_size=3, stride=1, padding=1)
         # self.relu7_1 = nn.ReLU()
 
-        # self.up_conv6 = ae.UpConv(ch_in=512, ch_out=256, k_size=1, scale=2)
         self.conv6 = nn.Conv3d(512, 256, kernel_size=3, stride=1, padding=1)
         self.batchNorm3d6 = nn.BatchNorm3d(256)
         self.relu6 = nn.ReLU()

@@ -3,8 +3,10 @@ import sys
 import lmdb
 import msgpack
 import msgpack_numpy as m
+
 m.patch()
-sys.path.append('./')
+sys.path.append("..")
+
 
 def openLMDB(path: str, subdir: bool = True):
     my_lmdb = lmdb.open(

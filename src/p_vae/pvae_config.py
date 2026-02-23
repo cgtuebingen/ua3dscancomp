@@ -1,6 +1,7 @@
 import os
 import sys
-sys.path.append('..')
+
+sys.path.append("..")
 
 import torch
 import pytorch_lightning as pl
@@ -10,6 +11,7 @@ from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pvae import SDFtoSDF
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--latent_dim", default=512, type=int)
@@ -18,14 +20,26 @@ def main():
     parser.add_argument("--batch_size", default=8, type=int)
     parser.add_argument("--learning_rate", default=1e-4, type=float)
 
-    parser.add_argument("--train_val_dict_path", default="/graphics/scratch2/staff/zakeri/LMDBs/ShapeNetCorev2_remeshed_0.008_train_val_dictionaries/", type=str)
+    # By mistake the test dictionary is called validation throughout the p_vae pipeline
+    parser.add_argument(
+        "--train_val_dict_path",
+        default="/path_to_poc-slt_data/",
+        type=str,
+        required=True,
+    )
 
-    parser.add_argument("--lmdb_path", default="/graphics/scratch2/staff/zakeri/LMDBs/shapenetcorev2Excludingcorev1validation_SDF_SpanningMultiResVoxelPLUSPC32_64/", type=str)
+    parser.add_argument(
+        "--lmdb_path", default="/path_to_train_lmdb/", type=str, required=True
+    )
 
-    parser.add_argument("--mesh_path", default="/graphics/scratch2/staff/zakeri/LMDBs/ShapeNetCorev2_remeshed_0.008/ShapeNetCore.v2/", type=str)
+    # TODO: if you are using our pre-maed lmdb you can set the mesh_path hard-coded as "/graphics/scratch2/staff/zakeri/LMDBs/ShapeNetCorev2_remeshed_0.008/ShapeNetCore.v2/"
+    # TODO, if you are generating the lmdb by your self, you must adopt it.
+    parser.add_argument(
+        "--mesh_path", default="path_to_remeshed_shapenet", type=str, required=True
+    )
     parser.add_argument(
         "--marching_cube_result_dir",
-        default="/graphics/scratch2/staff/zakeri/tmp/",
+        default="/path_to_marching_cube_result_dir/",
         type=str,
     )
 
@@ -72,10 +86,11 @@ def main():
         callbacks=[checkpoint_callback, lr_Monitor],
         val_check_interval=10747,
         check_val_every_n_epoch=1,
-        default_root_dir="/graphics/scratch2/staff/zakeri/tmp/",
+        default_root_dir="/path_to_tensorboard_log_root/",
     )
 
     trainer.fit(model)
+
 
 if __name__ == "__main__":
 
