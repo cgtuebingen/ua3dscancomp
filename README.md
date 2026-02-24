@@ -12,14 +12,6 @@
 
 ---
 
-## Project Progress Checklist
-
-- [ ] Release main codebase
-- [ ] Add evaluation scripts
-- [ ] Clean up and document configs
-- [ ] Add license info
----
-
 ## Abstract
 
 Imperfect reconstructions arising from occlusions, shadows, reflections, and other factors during 3D scanning often result in incomplete sections of the scanned object, with missing parts scattered randomly across its surface. We introduce an uncertainty-aware signed distance field (SDF) latent transformer that leverages uncertainty to identify and reconstruct missing parts based on the global shape of the incomplete scanned object and the immediate neighborhood of the affected regions. To our knowledge, we are the first to utilize uncertainties for SDF shape completion in the latent space. Our model has been trained on the entire Objaverse 1.0 dataset and demonstrates that our uncertainty-aware SDF completion method significantly outperforms previous works both numerically and visually.
@@ -43,10 +35,8 @@ You can generate train and validation LMDBs using [src/pre_processing](https://g
 ```bash
 ├── data/
 ├── src/
-├── results/
+├── docs/
 ├── requirements.txt
-├── train.py
-├── eval.py
 └── README.md
 ```
 
