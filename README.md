@@ -55,13 +55,12 @@ You can train via [train_config.py](https://github.com/cgtuebingen/ua3dscancomp/
 
 If you use this work, please cite it as:-->
 
-<!--```bibtex
-@article{Zakeri2025POC,
-  author  = {Zakeri, Faezeh and Braun, Raphael and Ruppert, Lukas and Lensch, Hendrik P.A.},
-  title   = {POC-SLT: Partial Object Completion with SDF Latent Transformers},
-  journal = {Proceedings of the Conference on Robots and Vision},
-  year    = {2025},
-  month   = {May 27},
-  note    = {https://crv.pubpub.org/pub/yanc7d1w}
+```bibtex
+@article{Zakeri2026ua3dscancomp,
+  author  = {Zakeri, Faezeh and Ruppert, Lukas, and Braun, Raphael, and Lensch, Hendrik P.A.},
+  title   = {Latent Uncertainty-Aware Multi-View SDF Scan Completion},
+  journal = {The IEEE/CVF Winter Conference on Applications of Computer Vision, WACV},
+  year    = {2026},
+  month   = {March 10},
+  note    = {}
 }
-You can also find citation metadata files or by clicking **Cite this repository** on the right.-->
