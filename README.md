@@ -18,6 +18,13 @@ Imperfect reconstructions arising from occlusions, shadows, reflections, and oth
 
 ---
 
+## Demo Gif
+[For high quality video, click here!](https://cgtuebingen.github.io/ua3dscancomp)
+<p align="center">
+  <img src="docs/demo.gif" alt="Ua3dscancomp Demo">
+</p>
+<!--![ua3dscancomp Demo](docs/demo.gif)-->
+
 ## 📦 Model checkpoint
 
 [Shape Completion on Objaverse](https://huggingface.co/zakeri68/3D-scancomp-objaverse)
