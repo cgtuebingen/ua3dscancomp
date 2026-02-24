@@ -30,6 +30,9 @@ Imperfect reconstructions arising from occlusions, shadows, reflections, and oth
 
 You can generate train and validation LMDBs using [src/pre_processing](https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/data_preprocessing) scripts provided.
 
+## Running
+You can train via (https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/training/train_config.py) and evaluate via (https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/evaluation/eval_config.py) 
+
 ## Project Structure
 
 ```bash
