@@ -89,7 +89,7 @@ class CompletePartialScans(pl.LightningModule):
             )
             pre_trained_vae.freeze()
             pre_trained_vae.train(False)
-            # del SDFtoSDF
+
             self.fdecoder = ed.load_decoder_from_checkpoint(pre_trained_vae, latent_dim)
             self.fencoder = ed.load_encoder_from_checkpoint(pre_trained_vae, latent_dim)
 

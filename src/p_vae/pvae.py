@@ -17,7 +17,6 @@ import p_vae.pvae_dataset as dt_new
 from torch.optim.lr_scheduler import CosineAnnealingLR
 import p_vae.normalizations as norm
 
-
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 class SDFtoSDF(pl.LightningModule):
     def __init__(
@@ -106,7 +105,7 @@ class SDFtoSDF(pl.LightningModule):
             normalized_gt_sdf_voxels_transformed
         ).unsqueeze(
             1
-        )  # FIXME
+        )
 
         predicted = self.forward(
             normalized_gt_sdf_voxels_transformed_reshaped, mode="training"
@@ -155,7 +154,7 @@ class SDFtoSDF(pl.LightningModule):
             normalized_gt_sdf_voxels_transformed
         ).unsqueeze(
             1
-        )  # FIXME
+        )
 
         predicted = self.forward(
             normalized_gt_sdf_voxels_transformed_reshaped, mode="val"
