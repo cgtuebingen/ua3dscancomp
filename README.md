@@ -32,13 +32,26 @@ Imperfect reconstructions arising from occlusions, shadows, reflections, and oth
 [Patchwise Variational Autoencoder (P-VAE) on Shapenet](https://huggingface.co/zakeri68/poc-slt-shapenet-p-vae)
 
 
-## Test Dataset LMDB
-[Objaverse Processed LMDB-Test-Split](https://huggingface.co/datasets/zakeri68/3D-scancomp-objaverse-test-lmdb)
+## Dataset
+- Evaluation
+  - [Objaverse Processed LMDB-Test-Split](https://huggingface.co/datasets/zakeri68/3D-scancomp-objaverse-test-lmdb)
 
-You can generate train and validation LMDBs using [src/pre_processing](https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/data_preprocessing) scripts provided.
+- Train and Validation
+  - You can generate train and validation LMDBs using [src/pre_processing](https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/data_preprocessing) scripts provided.
 
-## Running
-You can train via [train_config.py](https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/training/train_config.py) and evaluate via [eval_config.py](https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/evaluation/eval_config.py) 
+## P-VAE
+
+The source code for P-VAE can be taken from [POC-SLT](https://github.com/cgtuebingen/poc-slt) repository.
+
+## Running Instructions
+- Evaluation
+  - You can evaluate via [eval_config.py](https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/evaluation/eval_config.py) and given the model checkpoint above.
+
+- Train from scratch
+  - You can train from scratch via [train_config.py](https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/training/train_config.py)
+
+## On-the-Fly SDF Calculation
+The code for this part will very soon be published in another github repository and will be updated here.
 
 ## Project Structure
 
