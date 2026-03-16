@@ -51,7 +51,7 @@ The source code for P-VAE can be taken from [POC-SLT](https://github.com/cgtuebi
   - You can train from scratch via [train_config.py](https://github.com/cgtuebingen/ua3dscancomp/tree/main/src/training/train_config.py)
 
 ## On-the-Fly SDF Calculation
-The code for this part will very soon be published in another github repository and will be updated here.
+The code for this part will very soon be published in another github repository and will be linked here.
 
 ## Project Structure
 
