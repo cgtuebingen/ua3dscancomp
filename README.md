@@ -25,7 +25,18 @@ Imperfect reconstructions arising from occlusions, shadows, reflections, and oth
 </p>
 <!--![ua3dscancomp Demo](docs/demo.gif)-->
 
-## 📦 Model checkpoint
+## Project Structure
+
+```bash
+├── data/
+├── src/
+├── docs/
+├── requirements.txt
+└── README.md
+```
+
+
+## 📦 Model Checkpoint
 
 [Shape Completion on Objaverse](https://huggingface.co/zakeri68/3D-scancomp-objaverse)
 
@@ -52,16 +63,6 @@ The source code for P-VAE can be taken from [POC-SLT](https://github.com/cgtuebi
 
 ## On-the-Fly SDF Calculation
 The code for this part will very soon be published in another github repository and will be linked here.
-
-## Project Structure
-
-```bash
-├── data/
-├── src/
-├── docs/
-├── requirements.txt
-└── README.md
-```
 
 
 <!--## Citation
