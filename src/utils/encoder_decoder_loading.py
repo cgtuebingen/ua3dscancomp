@@ -1,8 +1,4 @@
-import sys
-
-sys.path.append("..")
-
-import p_vae.pvae_model as sc
+from utils import frozen_encoder_decoder as fe
 
 
 def load_encoder_from_checkpoint(pre_trained_model, latent_dim):
@@ -10,7 +6,7 @@ def load_encoder_from_checkpoint(pre_trained_model, latent_dim):
     params_encoder.freeze()
     params_encoder.train(False)
     fencoder = (
-        sc.VSEncoder(params_encoder.to(pre_trained_model.device), latent_dim)
+        fe.FVSEncoder(params_encoder.to(pre_trained_model.device), latent_dim)
         .to(pre_trained_model.device)
         .train(False)
     )
@@ -46,7 +42,7 @@ def load_decoder_from_checkpoint(pre_trained_model, latent_dim):
     params_decoder.freeze()
     params_decoder.train(False)
     fdecoder = (
-        sc.VSDecoder(params_decoder.to(pre_trained_model.device), latent_dim)
+        fe.FVSDecoder(params_decoder.to(pre_trained_model.device), latent_dim)
         .to(pre_trained_model.device)
         .train(False)
     )

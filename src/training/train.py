@@ -47,8 +47,8 @@ class CompletePartialScans(pl.LightningModule):
         obj_dir: str,
         num_samples: int,
         num_views_for_test: int,
-        num_warmup_steps: int,
-        num_training_steps: int,
+        num_warmup_steps: int = 1000,
+        num_training_steps: int = 10000,
     ):
         super(CompletePartialScans, self).__init__()
         self.save_hyperparameters()
